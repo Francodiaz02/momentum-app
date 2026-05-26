@@ -38,9 +38,9 @@ export default function SettingsModal({ open, onClose, onReset, streak, totalDay
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             style={{
-              position: 'fixed', bottom: 0, left: '50%',
-              transform: 'translateX(-50%)',
+              position: 'fixed', bottom: 0, left: 0, right: 0,
               width: '100%', maxWidth: '480px',
+              margin: '0 auto',
               maxHeight: '88vh',
               overflowY: 'auto',
               background: '#0f0f1a',

@@ -134,7 +134,7 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
           {!isDone && (
             <p style={{
               margin: '3px 0 0', fontSize: '12px',
-              color: '#3a3a5a',
+              color: '#7878aa',
               lineHeight: '1.3',
               fontStyle: 'italic',
             }}>
@@ -144,7 +144,7 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
 
           {/* Duration + tags row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginTop: '7px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', color: isDone ? '#333' : '#555' }}>
+            <span style={{ fontSize: '11px', color: isDone ? '#555' : '#888' }}>
               ⏱ {minMode && mission.minDuration ? mission.minDuration : mission.duration}
             </span>
 
@@ -184,7 +184,7 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
               >
                 <p style={{
                   margin: '10px 0 0', fontSize: '13px',
-                  color: '#666', lineHeight: '1.55',
+                  color: '#aaa', lineHeight: '1.55',
                 }}>
                   {mission.description}
                 </p>
@@ -200,7 +200,7 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
             onClick={() => setExpanded(v => !v)}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: '#333', padding: '3px',
+              color: '#666', padding: '3px',
               transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
               transition: 'transform 0.2s',
             }}

@@ -41,6 +41,8 @@ export default function SettingsModal({ open, onClose, onReset, streak, totalDay
               position: 'fixed', bottom: 0, left: '50%',
               transform: 'translateX(-50%)',
               width: '100%', maxWidth: '480px',
+              maxHeight: '88vh',
+              overflowY: 'auto',
               background: '#0f0f1a',
               border: '1px solid #1d2433',
               borderBottom: 'none',
@@ -86,7 +88,7 @@ export default function SettingsModal({ open, onClose, onReset, streak, totalDay
               ].map(({ value, label, icon }) => (
                 <div key={label}>
                   <div style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>{icon} {value}</div>
-                  <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>{label}</div>
+                  <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>{label}</div>
                 </div>
               ))}
             </div>
@@ -108,7 +110,7 @@ export default function SettingsModal({ open, onClose, onReset, streak, totalDay
                   <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
                     How Momentum works
                   </div>
-                  <div style={{ fontSize: '13px', color: '#555', lineHeight: '1.5' }}>
+                  <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.5' }}>
                     Every day you get 2 missions — one English, one Fitness. Complete both to win the day.
                     Use Min Mode on tough days to keep your streak alive with shorter versions.
                     Miss a day? You only lose 1 streak point, not everything.
@@ -133,7 +135,7 @@ export default function SettingsModal({ open, onClose, onReset, streak, totalDay
                   <div style={{ fontSize: '14px', fontWeight: '700', color: '#fff', marginBottom: '4px' }}>
                     Min Mode
                   </div>
-                  <div style={{ fontSize: '13px', color: '#555', lineHeight: '1.5' }}>
+                  <div style={{ fontSize: '13px', color: '#999', lineHeight: '1.5' }}>
                     Low energy? Activate Min Mode from the header. Missions become shorter — the goal is just to show up.
                     Completed in Min Mode counts as ⚡ on your calendar.
                   </div>

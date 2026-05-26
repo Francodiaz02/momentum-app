@@ -1,0 +1,1 @@
+[browser] Updating a style property during rerender (textDecoration) when a conflicting property is set (textDecorationColor) can lead to styling bugs. To avoid this, don't mix shorthand and non-shorthand properties for the same value; instead, replace the shorthand with separate values. 

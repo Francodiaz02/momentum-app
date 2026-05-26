@@ -54,10 +54,16 @@ export default function PWAInstallBanner() {
   };
 
   const install = async () => {
-    if (deferred) {
-      await deferred.prompt();
-      const { outcome } = await deferred.userChoice;
-      if (outcome === 'accepted') setShow(false);
+    if (!deferred) return;
+    const evt = deferred;
+    setDeferred(null); // prevent double-trigger
+    await evt.prompt();
+    const { outcome } = await evt.userChoice;
+    if (outcome === 'accepted') {
+      setShow(false);
+      localStorage.setItem('pwa-banner-dismissed', '1');
+    } else {
+      setDeferred(evt); // restore if user cancelled
     }
   };
 

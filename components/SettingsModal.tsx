@@ -7,12 +7,13 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onReset: () => void;
+  onResetDailyPack: () => void;
   streak: number;
   totalDays: number;
   totalXP: number;
 }
 
-export default function SettingsModal({ open, onClose, onReset, streak, totalDays, totalXP }: Props) {
+export default function SettingsModal({ open, onClose, onReset, onResetDailyPack, streak, totalDays, totalXP }: Props) {
   return (
     <AnimatePresence>
       {open && (
@@ -143,7 +144,22 @@ export default function SettingsModal({ open, onClose, onReset, streak, totalDay
               </div>
             </div>
 
-            {/* Reset button */}
+            {/* Reset daily pack button */}
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { onResetDailyPack(); onClose(); }}
+              style={{
+                width: '100%', padding: '13px',
+                background: '#0a1200', border: '1px solid #2a4a00',
+                borderRadius: '14px', cursor: 'pointer', marginBottom: '10px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                gap: '8px', color: '#84cc16', fontSize: '13px', fontWeight: '700',
+              }}
+            >
+              🎁 Resetear sobre diario
+            </motion.button>
+
+            {/* Reset all button */}
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => {

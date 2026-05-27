@@ -563,6 +563,12 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         onReset={handleReset}
+        onResetDailyPack={() => {
+          if (!state) return;
+          const newState = { ...state, ticketClaimedDate: '', packsAvailable: 0 };
+          import('@/lib/store').then(({ saveState }) => saveState(newState));
+          setState(newState);
+        }}
         streak={state.currentStreak}
         totalDays={state.totalDaysCompleted}
         totalXP={state.totalXP}

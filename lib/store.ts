@@ -1,104 +1,89 @@
-import { AppState, Mission, DayRecord } from './types';
+import { AppState, DayRecord } from './types';
 import { generateDailyMissions, getTodayDateStr, calculateXP, calculateLevel } from './missions';
+import { checkNewBadges } from './badges';
 
-const STORAGE_KEY = 'habitapp_v2';
+const STORAGE_KEY = 'habitapp_v3';
 
 function getDefaultState(): AppState {
   const today = getTodayDateStr();
   return {
-    currentStreak: 0,
-    longestStreak: 0,
-    totalDaysCompleted: 0,
-    totalXP: 0,
-    level: 1,
-    history: [],
+    currentStreak: 0, longestStreak: 0, totalDaysCompleted: 0,
+    totalXP: 0, level: 1, history: [],
     lastOpenedDate: today,
     todayMissions: generateDailyMissions(today),
-    todayCompleted: false,
-    minModeActive: false,
-    consecutiveMissedFitness: 0,
-    consecutiveCompletedEnglish: 0,
+    todayCompleted: false, minModeActive: false,
+    consecutiveMissedFitness: 0, consecutiveCompletedEnglish: 0,
+    totalRuns: 0, totalPushups: 0, totalAbs: 0,
+    totalEnglishSessions: 0, totalSpeakingSessions: 0,
+    totalMoviesWatched: 0, totalChatSessions: 0, totalShadowSessions: 0,
+    totalFruitsEaten: 0,
+    badgesUnlocked: [], newlyUnlockedBadge: null,
+    ticketClaimedDate: '',
   };
 }
 
 function localDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 export function loadState(): AppState {
   if (typeof window === 'undefined') return getDefaultState();
-
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return getDefaultState();
-
     const state: AppState = JSON.parse(raw);
 
-    // Backfill fields added in new version
+    // Backfill new fields
     if (state.consecutiveMissedFitness === undefined) state.consecutiveMissedFitness = 0;
     if (state.consecutiveCompletedEnglish === undefined) state.consecutiveCompletedEnglish = 0;
+    if (state.totalRuns === undefined) state.totalRuns = 0;
+    if (state.totalPushups === undefined) state.totalPushups = 0;
+    if (state.totalAbs === undefined) state.totalAbs = 0;
+    if (state.totalEnglishSessions === undefined) state.totalEnglishSessions = 0;
+    if (state.totalSpeakingSessions === undefined) state.totalSpeakingSessions = 0;
+    if (state.totalMoviesWatched === undefined) state.totalMoviesWatched = 0;
+    if (state.totalChatSessions === undefined) state.totalChatSessions = 0;
+    if (state.totalShadowSessions === undefined) state.totalShadowSessions = 0;
+    if (state.totalFruitsEaten === undefined) state.totalFruitsEaten = 0;
+    if (state.badgesUnlocked === undefined) state.badgesUnlocked = [];
+    if (state.newlyUnlockedBadge === undefined) state.newlyUnlockedBadge = null;
+    if (state.ticketClaimedDate === undefined) state.ticketClaimedDate = '';
 
     const today = getTodayDateStr();
-
     if (state.lastOpenedDate !== today) {
-      // Archive previous day
       if (state.lastOpenedDate && state.todayMissions.length > 0) {
         const prevRecord: DayRecord = {
-          date: state.lastOpenedDate,
-          missions: state.todayMissions,
-          completed: state.todayCompleted,
-          minModeOnly: state.minModeActive,
+          date: state.lastOpenedDate, missions: state.todayMissions,
+          completed: state.todayCompleted, minModeOnly: state.minModeActive,
           xpEarned: calculateXP(state.todayMissions, state.minModeActive),
         };
-        const exists = state.history.find(h => h.date === state.lastOpenedDate);
-        if (!exists) state.history.push(prevRecord);
+        if (!state.history.find(h => h.date === state.lastOpenedDate)) {
+          state.history.push(prevRecord);
+        }
       }
 
-      // Update adaptive counters
-      const fitnessDone = state.todayMissions.some(
-        m => m.category === 'fitness' && (m.completed || m.minModeCompleted)
-      );
-      const englishDone = state.todayMissions.filter(
-        m => m.category === 'english' && (m.completed || m.minModeCompleted)
-      ).length;
-
-      state.consecutiveMissedFitness = fitnessDone ? 0 : state.consecutiveMissedFitness + 1;
-      state.consecutiveCompletedEnglish = englishDone >= 2
-        ? state.consecutiveCompletedEnglish + 1
-        : 0;
-
-      // Update streak
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = localDateStr(yesterday);
 
       if (state.todayCompleted) {
         state.currentStreak += 1;
-        if (state.currentStreak > state.longestStreak) {
-          state.longestStreak = state.currentStreak;
-        }
+        if (state.currentStreak > state.longestStreak) state.longestStreak = state.currentStreak;
         state.totalDaysCompleted += 1;
         state.totalXP += calculateXP(state.todayMissions, state.minModeActive);
         state.level = calculateLevel(state.totalXP);
       } else {
         const hadYesterday = state.history.find(h => h.date === yesterdayStr && h.completed);
-        if (!hadYesterday && state.currentStreak > 0) {
-          state.currentStreak = Math.max(0, state.currentStreak - 1);
-        }
+        if (!hadYesterday && state.currentStreak > 0) state.currentStreak = Math.max(0, state.currentStreak - 1);
       }
 
-      // Generate missions — force home fitness if user keeps skipping outdoor
-      const forceHome = state.consecutiveMissedFitness >= 3;
-      state.todayMissions = generateDailyMissions(today, forceHome);
+      state.todayMissions = generateDailyMissions(today);
       state.todayCompleted = false;
       state.minModeActive = false;
       state.lastOpenedDate = today;
-
-      // CRITICAL: persist the rolled-over state immediately so refreshing
-      // the page before any interaction doesn't re-run the rollover logic
+      state.newlyUnlockedBadge = null;
       saveState(state);
     }
-
     return state;
   } catch {
     return getDefaultState();
@@ -111,27 +96,57 @@ export function saveState(state: AppState): void {
 }
 
 export function completeMission(state: AppState, missionId: string, minMode: boolean): AppState {
-  const newMissions = state.todayMissions.map(m => {
-    if (m.id === missionId) {
-      return minMode ? { ...m, minModeCompleted: true, completed: false } : { ...m, completed: true, minModeCompleted: false };
-    }
-    return m;
-  });
+  const mission = state.todayMissions.find(m => m.id === missionId);
+  if (!mission) return state;
 
+  const newMissions = state.todayMissions.map(m =>
+    m.id === missionId
+      ? (minMode ? { ...m, minModeCompleted: true, completed: false } : { ...m, completed: true, minModeCompleted: false })
+      : m
+  );
   const allDone = newMissions.every(m => m.completed || m.minModeCompleted);
-  const newState: AppState = { ...state, todayMissions: newMissions, todayCompleted: allDone };
-  saveState(newState);
-  return newState;
+
+  // Update specific counters
+  let { totalRuns, totalPushups, totalAbs, totalEnglishSessions,
+        totalSpeakingSessions, totalMoviesWatched, totalChatSessions,
+        totalShadowSessions, totalFruitsEaten } = state;
+
+  if (mission.category === 'english') {
+    totalEnglishSessions += 1;
+    if (mission.subtype === 'speaking') totalSpeakingSessions += 1;
+    if (mission.subtype === 'movie') totalMoviesWatched += 1;
+    if (mission.subtype === 'chat') totalChatSessions += 1;
+    if (mission.subtype === 'shadow') totalShadowSessions += 1;
+  }
+  if (mission.subtype === 'run') totalRuns += 1;
+  if (mission.subtype === 'pushups') totalPushups += 25; // avg of 20-30
+  if (mission.subtype === 'abs') totalAbs += 40; // avg of 30-50
+  if (mission.category === 'fruit') totalFruitsEaten += 1;
+
+  const updatedState: AppState = {
+    ...state,
+    todayMissions: newMissions,
+    todayCompleted: allDone,
+    totalRuns, totalPushups, totalAbs, totalEnglishSessions,
+    totalSpeakingSessions, totalMoviesWatched, totalChatSessions,
+    totalShadowSessions, totalFruitsEaten,
+  };
+
+  // Check for newly unlocked badges
+  const newBadges = checkNewBadges(updatedState);
+  if (newBadges.length > 0) {
+    updatedState.badgesUnlocked = [...updatedState.badgesUnlocked, ...newBadges];
+    updatedState.newlyUnlockedBadge = newBadges[0];
+  }
+
+  saveState(updatedState);
+  return updatedState;
 }
 
 export function uncompleteMission(state: AppState, missionId: string): AppState {
-  const newMissions = state.todayMissions.map(m => {
-    if (m.id === missionId) {
-      return { ...m, completed: false, minModeCompleted: false };
-    }
-    return m;
-  });
-
+  const newMissions = state.todayMissions.map(m =>
+    m.id === missionId ? { ...m, completed: false, minModeCompleted: false } : m
+  );
   const newState: AppState = { ...state, todayMissions: newMissions, todayCompleted: false };
   saveState(newState);
   return newState;
@@ -143,20 +158,25 @@ export function toggleMinMode(state: AppState): AppState {
   return newState;
 }
 
+export function claimTicket(state: AppState): AppState {
+  const newState = { ...state, ticketClaimedDate: getTodayDateStr() };
+  saveState(newState);
+  return newState;
+}
+
+export function clearUnlockedBadge(state: AppState): AppState {
+  const newState = { ...state, newlyUnlockedBadge: null };
+  saveState(newState);
+  return newState;
+}
+
 export function getCalendarData(state: AppState): Map<string, 'completed' | 'partial' | 'missed'> {
   const map = new Map<string, 'completed' | 'partial' | 'missed'>();
-
   state.history.forEach(record => {
-    if (record.completed) {
-      map.set(record.date, record.minModeOnly ? 'partial' : 'completed');
-    } else {
-      map.set(record.date, 'missed');
-    }
+    map.set(record.date, record.completed ? (record.minModeOnly ? 'partial' : 'completed') : 'missed');
   });
-
   if (state.todayCompleted) {
     map.set(getTodayDateStr(), state.minModeActive ? 'partial' : 'completed');
   }
-
   return map;
 }

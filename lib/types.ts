@@ -1,11 +1,13 @@
-export type MissionCategory = 'english' | 'fitness';
+export type MissionCategory = 'english' | 'fitness' | 'fruit';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
+export type MissionSubtype = 'run' | 'pushups' | 'abs' | 'speaking' | 'movie' | 'chat' | 'shadow' | 'music' | 'reading' | 'fruit';
 
 export interface Mission {
   id: string;
   category: MissionCategory;
+  subtype?: MissionSubtype;
   title: string;
-  subtitleEs: string;      // Spanish support hint — lighter, smaller in UI
+  subtitleEs: string;
   description: string;
   duration: string;
   minDuration?: string;
@@ -13,10 +15,19 @@ export interface Mission {
   difficulty: DifficultyLevel;
   completed: boolean;
   minModeCompleted?: boolean;
+  xpMultiplier?: number; // fruit missions = 2
+}
+
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: 'english' | 'fitness' | 'extra';
 }
 
 export interface DayRecord {
-  date: string; // YYYY-MM-DD
+  date: string;
   missions: Mission[];
   completed: boolean;
   minModeOnly: boolean;
@@ -34,7 +45,21 @@ export interface AppState {
   todayMissions: Mission[];
   todayCompleted: boolean;
   minModeActive: boolean;
-  // Adaptive tracking
   consecutiveMissedFitness: number;
   consecutiveCompletedEnglish: number;
+  // Stats counters
+  totalRuns: number;
+  totalPushups: number;
+  totalAbs: number;
+  totalEnglishSessions: number;
+  totalSpeakingSessions: number;
+  totalMoviesWatched: number;
+  totalChatSessions: number;
+  totalShadowSessions: number;
+  totalFruitsEaten: number;
+  // Badges
+  badgesUnlocked: string[];
+  newlyUnlockedBadge: string | null;
+  // Daily ticket
+  ticketClaimedDate: string;
 }

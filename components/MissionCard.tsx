@@ -24,13 +24,18 @@ const COLORS = {
     text: '#86efac', glow: 'rgba(34,197,94,0.14)',
     doneBg: '#080f08', doneBorder: '#122412',
   },
+  fruit: {
+    bg: '#1a1000', border: '#7a5000', accent: '#f59e0b',
+    text: '#fcd34d', glow: 'rgba(245,158,11,0.25)',
+    doneBg: '#100a00', doneBorder: '#4a3000',
+  },
 };
 
 export default function MissionCard({ mission, minMode, onComplete, onUndo, index }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [animating, setAnimating] = useState(false);
   const isDone = mission.completed || mission.minModeCompleted;
-  const c = COLORS[mission.category];
+  const c = COLORS[mission.category] ?? COLORS.fruit;
   const diffMap = { easy: 1, medium: 2, hard: 3 };
 
   const handleDone = () => {
@@ -46,8 +51,12 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
     <motion.div
       layout
       initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.3 }}
+      animate={mission.category === 'fruit' && !isDone
+        ? { opacity: 1, y: 0, boxShadow: ['0 0 0px rgba(245,158,11,0)', '0 0 18px rgba(245,158,11,0.3)', '0 0 0px rgba(245,158,11,0)'] }
+        : { opacity: 1, y: 0 }}
+      transition={mission.category === 'fruit'
+        ? { delay: index * 0.07, duration: 2, repeat: Infinity }
+        : { delay: index * 0.07, duration: 0.3 }}
       style={{
         background: isDone ? c.doneBg : c.bg,
         border: `1px solid ${isDone ? c.doneBorder : c.border}`,
@@ -99,14 +108,19 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
         <div style={{ flex: 1, minWidth: 0 }}>
 
           {/* Category + difficulty row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px', flexWrap: 'wrap' }}>
             <span style={{
               fontSize: '10px', fontWeight: '700',
               color: isDone ? '#2a5a2a' : c.text,
               textTransform: 'uppercase', letterSpacing: '0.07em',
             }}>
-              {mission.category === 'english' ? '🇬🇧 English' : '💪 Fitness'}
+              {mission.category === 'english' ? '🇬🇧 English' : mission.category === 'fitness' ? '💪 Fitness' : '🍎 Bonus'}
             </span>
+            {mission.category === 'fruit' && !isDone && (
+              <span style={{ fontSize: '10px', padding: '2px 7px', background: '#3a2000', border: '1px solid #7a5000', borderRadius: '20px', color: '#f59e0b', fontWeight: '800' }}>
+                ⭐ BONUS x2 XP
+              </span>
+            )}
             <div style={{ display: 'flex', gap: '3px' }}>
               {[1, 2, 3].map(n => (
                 <div key={n} style={{

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Settings } from 'lucide-react';
 import { AppState } from '@/lib/types';
-import { loadState, completeMission, uncompleteMission, toggleMinMode, getCalendarData } from '@/lib/store';
+import { loadState, completeMission, uncompleteMission, toggleMinMode, getCalendarData, claimTicket, clearUnlockedBadge } from '@/lib/store';
 import { calculateXP, getTodayDateStr, calculateLevel } from '@/lib/missions';
 import MissionCard from '@/components/MissionCard';
 import StreakBadge from '@/components/StreakBadge';
@@ -12,8 +12,11 @@ import DayComplete from '@/components/DayComplete';
 import CalendarView from '@/components/CalendarView';
 import SettingsModal from '@/components/SettingsModal';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
+import BadgesView from '@/components/BadgesView';
+import BadgeUnlockModal from '@/components/BadgeUnlockModal';
+import DailyTicket from '@/components/DailyTicket';
 
-type Tab = 'today' | 'calendar' | 'stats';
+type Tab = 'today' | 'calendar' | 'badges' | 'stats';
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
@@ -33,7 +36,7 @@ export default function Home() {
     if (!state) return;
     const newState = completeMission(state, missionId, minMode);
 
-    // Check level up (compare current level against saved level)
+    // Check level up
     const prospectiveXP = newState.totalXP + calculateXP(newState.todayMissions, minMode);
     const prospectiveLevel = calculateLevel(prospectiveXP);
     if (prospectiveLevel > prevLevelRef.current) {
@@ -63,11 +66,21 @@ export default function Home() {
 
   const handleReset = () => {
     if (typeof window === 'undefined') return;
-    localStorage.removeItem('habitapp_v1');
+    localStorage.removeItem('habitapp_v3');
     const fresh = loadState();
     setState(fresh);
     setJustCompleted(false);
     prevLevelRef.current = 1;
+  };
+
+  const handleClaimTicket = () => {
+    if (!state) return;
+    setState(claimTicket(state));
+  };
+
+  const handleClearBadge = () => {
+    if (!state) return;
+    setState(clearUnlockedBadge(state));
   };
 
   if (!state) {
@@ -92,6 +105,8 @@ export default function Home() {
   const completedCount = state.todayMissions.filter(m => m.completed || m.minModeCompleted).length;
   const totalMissions = state.todayMissions.length;
   const progressPct = (completedCount / totalMissions) * 100;
+  const ticketClaimed = state.ticketClaimedDate === getTodayDateStr();
+  const hasFruitToday = state.todayMissions.some(m => m.category === 'fruit');
 
   const greeting = () => {
     const h = new Date().getHours();
@@ -104,11 +119,15 @@ export default function Home() {
   const tabs: { id: Tab; label: string }[] = [
     { id: 'today', label: 'Today' },
     { id: 'calendar', label: 'Calendar' },
+    { id: 'badges', label: 'Badges' },
     { id: 'stats', label: 'Stats' },
   ];
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0f', maxWidth: '480px', margin: '0 auto', paddingBottom: '60px' }}>
+
+      {/* Badge unlock modal */}
+      <BadgeUnlockModal badgeId={state.newlyUnlockedBadge} onClose={handleClearBadge} />
 
       {/* Level-up toast */}
       <AnimatePresence>
@@ -195,12 +214,12 @@ export default function Home() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              flex: 1, padding: '9px 8px',
+              flex: 1, padding: '7px 4px',
               background: activeTab === tab.id ? '#fff' : 'transparent',
               border: 'none', borderRadius: '10px',
               cursor: 'pointer',
               color: activeTab === tab.id ? '#000' : '#444',
-              fontSize: '13px', fontWeight: '700',
+              fontSize: '12px', fontWeight: '700',
               transition: 'all 0.18s',
             }}
           >
@@ -224,10 +243,14 @@ export default function Home() {
             >
               <StreakBadge streak={state.currentStreak} totalDays={state.totalDaysCompleted} level={state.level} xp={state.totalXP} />
 
+              {/* Daily Ticket */}
+              <DailyTicket claimed={ticketClaimed} onClaim={handleClaimTicket} />
+
               {/* Progress bar */}
               <div style={{ margin: '16px 0 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#555', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '12px', color: '#555', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   Today&apos;s missions
+                  {hasFruitToday && <span style={{ fontSize: '10px', color: '#f59e0b', fontWeight: '700' }}>⭐ Bonus</span>}
                 </span>
                 <span style={{ fontSize: '12px', color: progressPct === 100 ? '#4ade80' : '#444', fontWeight: '700' }}>
                   {completedCount}/{totalMissions}
@@ -383,6 +406,20 @@ export default function Home() {
             </motion.div>
           )}
 
+          {/* BADGES */}
+          {activeTab === 'badges' && (
+            <motion.div
+              key="badges"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+            >
+              <SectionLabel>Insignias</SectionLabel>
+              <BadgesView unlockedIds={state.badgesUnlocked} />
+            </motion.div>
+          )}
+
           {/* STATS */}
           {activeTab === 'stats' && (
             <motion.div
@@ -420,6 +457,27 @@ export default function Home() {
                     <div style={{ fontSize: '10px', color: '#444', marginTop: '5px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       {label}
                     </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Detailed counters */}
+              <div style={{ background: '#0d0d18', border: '1px solid #161628', borderRadius: '16px', padding: '18px', marginBottom: '16px' }}>
+                <div style={{ fontSize: '13px', color: '#fff', fontWeight: '700', marginBottom: '16px' }}>Activity Counters</div>
+                {[
+                  { label: '🏃 Runs', value: state.totalRuns },
+                  { label: '💪 Push-ups (total)', value: state.totalPushups },
+                  { label: '⚡ Abs (total)', value: state.totalAbs },
+                  { label: '🇬🇧 English sessions', value: state.totalEnglishSessions },
+                  { label: '🎤 Speaking sessions', value: state.totalSpeakingSessions },
+                  { label: '🎬 Series/movies', value: state.totalMoviesWatched },
+                  { label: '🤖 AI chats', value: state.totalChatSessions },
+                  { label: '🔊 Shadowing sessions', value: state.totalShadowSessions },
+                  { label: '🍎 Fruits eaten (bonus)', value: state.totalFruitsEaten },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #111' }}>
+                    <span style={{ fontSize: '13px', color: '#888' }}>{label}</span>
+                    <span style={{ fontSize: '13px', color: '#fff', fontWeight: '700' }}>{value}</span>
                   </div>
                 ))}
               </div>

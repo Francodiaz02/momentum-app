@@ -77,7 +77,7 @@ export default function BadgeUnlockModal({ badgeId, onClose }: Props) {
               transition={{ delay: 0.2 }}
               style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.15em', color: color, textTransform: 'uppercase', marginBottom: '8px' }}
             >
-              ✦ Insignia desbloqueada ✦
+              ✦ ¡Reliquia desbloqueada! ✦
             </motion.div>
 
             {/* Badge name */}

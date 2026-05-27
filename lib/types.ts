@@ -62,4 +62,8 @@ export interface AppState {
   newlyUnlockedBadge: string | null;
   // Daily ticket
   ticketClaimedDate: string;
+  // Sticker album
+  ownedStickers: { stickerId: string; count: number; firstObtainedAt: string }[];
+  pendingPack: string[] | null;
+  packsAvailable: number;
 }

@@ -4,19 +4,20 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Settings } from 'lucide-react';
 import { AppState } from '@/lib/types';
-import { loadState, completeMission, uncompleteMission, toggleMinMode, getCalendarData, claimTicket, clearUnlockedBadge } from '@/lib/store';
+import { loadState, completeMission, uncompleteMission, toggleMinMode, claimTicketAndGetPack, clearUnlockedBadge, openPack, claimPack } from '@/lib/store';
 import { calculateXP, getTodayDateStr, calculateLevel } from '@/lib/missions';
 import MissionCard from '@/components/MissionCard';
 import StreakBadge from '@/components/StreakBadge';
 import DayComplete from '@/components/DayComplete';
-import CalendarView from '@/components/CalendarView';
 import SettingsModal from '@/components/SettingsModal';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
-import BadgesView from '@/components/BadgesView';
 import BadgeUnlockModal from '@/components/BadgeUnlockModal';
 import DailyTicket from '@/components/DailyTicket';
+import PackOpening from '@/components/PackOpening';
+import AlbumView from '@/components/AlbumView';
+import RelicsView from '@/components/RelicsView';
 
-type Tab = 'today' | 'calendar' | 'badges' | 'stats';
+type Tab = 'today' | 'album' | 'relics' | 'stats';
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
@@ -24,6 +25,7 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
   const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null);
+  const [packOpeningActive, setPackOpeningActive] = useState(false);
   const prevLevelRef = useRef<number>(1);
 
   useEffect(() => {
@@ -70,12 +72,26 @@ export default function Home() {
     const fresh = loadState();
     setState(fresh);
     setJustCompleted(false);
+    setPackOpeningActive(false);
     prevLevelRef.current = 1;
   };
 
   const handleClaimTicket = () => {
     if (!state) return;
-    setState(claimTicket(state));
+    setState(claimTicketAndGetPack(state));
+  };
+
+  const handleOpenPack = () => {
+    if (!state || state.packsAvailable <= 0) return;
+    const newState = openPack(state);
+    setState(newState);
+    setPackOpeningActive(true);
+  };
+
+  const handleClaimPackStickers = () => {
+    if (!state) return;
+    setState(claimPack(state));
+    setPackOpeningActive(false);
   };
 
   const handleClearBadge = () => {
@@ -100,8 +116,7 @@ export default function Home() {
     );
   }
 
-  const calendarData = getCalendarData(state);
-  const todayXP = calculateXP(state.todayMissions, state.minModeActive);
+const todayXP = calculateXP(state.todayMissions, state.minModeActive);
   const completedCount = state.todayMissions.filter(m => m.completed || m.minModeCompleted).length;
   const totalMissions = state.todayMissions.length;
   const progressPct = (completedCount / totalMissions) * 100;
@@ -117,9 +132,9 @@ export default function Home() {
   };
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'today', label: 'Today' },
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'badges', label: 'Badges' },
+    { id: 'today', label: 'Hoy' },
+    { id: 'album', label: 'Álbum' },
+    { id: 'relics', label: 'Logros' },
     { id: 'stats', label: 'Stats' },
   ];
 
@@ -128,6 +143,14 @@ export default function Home() {
 
       {/* Badge unlock modal */}
       <BadgeUnlockModal badgeId={state.newlyUnlockedBadge} onClose={handleClearBadge} />
+
+      {/* Pack opening modal */}
+      <PackOpening
+        pack={packOpeningActive ? state.pendingPack : null}
+        onClaim={handleClaimPackStickers}
+        onClose={() => setPackOpeningActive(false)}
+        ownedStickers={state.ownedStickers}
+      />
 
       {/* Level-up toast */}
       <AnimatePresence>
@@ -244,7 +267,12 @@ export default function Home() {
               <StreakBadge streak={state.currentStreak} totalDays={state.totalDaysCompleted} level={state.level} xp={state.totalXP} />
 
               {/* Daily Ticket */}
-              <DailyTicket claimed={ticketClaimed} onClaim={handleClaimTicket} />
+              <DailyTicket
+                claimed={ticketClaimed}
+                onClaim={handleClaimTicket}
+                packsAvailable={state.packsAvailable}
+                onOpenPack={handleOpenPack}
+              />
 
               {/* Progress bar */}
               <div style={{ margin: '16px 0 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -356,67 +384,29 @@ export default function Home() {
             </motion.div>
           )}
 
-          {/* CALENDAR */}
-          {activeTab === 'calendar' && (
+          {/* ALBUM */}
+          {activeTab === 'album' && (
             <motion.div
-              key="calendar"
+              key="album"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18 }}
             >
-              <SectionLabel>History</SectionLabel>
-              <CalendarView calendarData={calendarData} />
-
-              {state.history.length > 0 && (
-                <div style={{ marginTop: '20px' }}>
-                  <SectionLabel>Recent Days</SectionLabel>
-                  {[...state.history].reverse().slice(0, 10).map(record => (
-                    <div key={record.date} style={{
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      padding: '11px 0', borderBottom: '1px solid #0f0f14',
-                    }}>
-                      <div style={{
-                        width: '34px', height: '34px',
-                        background: record.completed ? '#0c200c' : '#160808',
-                        borderRadius: '10px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '15px', border: `1px solid ${record.completed ? '#1a4a1a' : '#2a0a0a'}`,
-                      }}>
-                        {record.completed ? (record.minModeOnly ? '⚡' : '✓') : '○'}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#ccc' }}>
-                          {new Date(record.date + 'T12:00:00').toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })}
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#444', marginTop: '1px' }}>
-                          {record.completed ? `+${record.xpEarned} XP earned` : 'Not completed'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {state.history.length === 0 && (
-                <p style={{ textAlign: 'center', color: '#2a2a3a', fontSize: '13px', marginTop: '32px' }}>
-                  Complete your first day to see history here.
-                </p>
-              )}
+              <AlbumView ownedStickers={state.ownedStickers} />
             </motion.div>
           )}
 
-          {/* BADGES */}
-          {activeTab === 'badges' && (
+          {/* RELICS */}
+          {activeTab === 'relics' && (
             <motion.div
-              key="badges"
+              key="relics"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18 }}
             >
-              <SectionLabel>Insignias</SectionLabel>
-              <BadgesView unlockedIds={state.badgesUnlocked} />
+              <RelicsView unlockedIds={state.badgesUnlocked} />
             </motion.div>
           )}
 

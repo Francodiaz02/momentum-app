@@ -1,6 +1,7 @@
 import { AppState, DayRecord } from './types';
 import { generateDailyMissions, getTodayDateStr, calculateXP, calculateLevel } from './missions';
 import { checkNewBadges } from './badges';
+import { generatePackStickers } from './stickers';
 
 const STORAGE_KEY = 'habitapp_v3';
 
@@ -19,6 +20,9 @@ function getDefaultState(): AppState {
     totalFruitsEaten: 0,
     badgesUnlocked: [], newlyUnlockedBadge: null,
     ticketClaimedDate: '',
+    ownedStickers: [],
+    pendingPack: null,
+    packsAvailable: 0,
   };
 }
 
@@ -48,6 +52,9 @@ export function loadState(): AppState {
     if (state.badgesUnlocked === undefined) state.badgesUnlocked = [];
     if (state.newlyUnlockedBadge === undefined) state.newlyUnlockedBadge = null;
     if (state.ticketClaimedDate === undefined) state.ticketClaimedDate = '';
+    if (state.ownedStickers === undefined) state.ownedStickers = [];
+    if (state.pendingPack === undefined) state.pendingPack = null;
+    if (state.packsAvailable === undefined) state.packsAvailable = 0;
 
     const today = getTodayDateStr();
     if (state.lastOpenedDate !== today) {
@@ -158,8 +165,41 @@ export function toggleMinMode(state: AppState): AppState {
   return newState;
 }
 
-export function claimTicket(state: AppState): AppState {
-  const newState = { ...state, ticketClaimedDate: getTodayDateStr() };
+export function claimTicketAndGetPack(state: AppState): AppState {
+  const newState = {
+    ...state,
+    ticketClaimedDate: getTodayDateStr(),
+    packsAvailable: state.packsAvailable + 1,
+  };
+  saveState(newState);
+  return newState;
+}
+
+export function openPack(state: AppState): AppState {
+  if (state.packsAvailable <= 0) return state;
+  const seed = Date.now();
+  const packStickers = generatePackStickers(seed);
+  const newState = {
+    ...state,
+    packsAvailable: state.packsAvailable - 1,
+    pendingPack: packStickers,
+  };
+  saveState(newState);
+  return newState;
+}
+
+export function claimPack(state: AppState): AppState {
+  if (!state.pendingPack) return state;
+  const newOwned = [...state.ownedStickers];
+  for (const stickerId of state.pendingPack) {
+    const existing = newOwned.find(o => o.stickerId === stickerId);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      newOwned.push({ stickerId, count: 1, firstObtainedAt: getTodayDateStr() });
+    }
+  }
+  const newState = { ...state, ownedStickers: newOwned, pendingPack: null };
   saveState(newState);
   return newState;
 }

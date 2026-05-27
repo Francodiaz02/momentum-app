@@ -60,7 +60,7 @@ export default function DailyTicket({ claimed, packsAvailable, onClaim, onOpenPa
   // State 1: free pack available
   return (
     <motion.button
-      onClick={() => { onClaim(); onOpenPack(); }}
+      onClick={onClaim}
       animate={{ boxShadow: ['0 0 0px rgba(245,158,11,0)', '0 0 24px rgba(245,158,11,0.3)', '0 0 0px rgba(245,158,11,0)'] }}
       transition={{ duration: 2, repeat: Infinity }}
       style={{

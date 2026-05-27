@@ -224,6 +224,12 @@ export function claimPack(state: AppState): AppState {
   return newState;
 }
 
+export function resetDailyTicket(state: AppState): AppState {
+  const newState = { ...state, ticketClaimedDate: '', packsAvailable: 0 };
+  saveState(newState);
+  return newState;
+}
+
 export function clearUnlockedBadge(state: AppState): AppState {
   const newState = { ...state, newlyUnlockedBadge: null };
   saveState(newState);

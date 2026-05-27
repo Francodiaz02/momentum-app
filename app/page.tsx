@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Settings } from 'lucide-react';
 import { AppState } from '@/lib/types';
-import { loadState, completeMission, uncompleteMission, toggleMinMode, claimTicketAndGetPack, clearUnlockedBadge, openPack, claimPack, buyAndOpenPack } from '@/lib/store';
+import { loadState, completeMission, uncompleteMission, toggleMinMode, claimTicketAndGetPack, clearUnlockedBadge, openPack, claimPack, buyAndOpenPack, resetDailyTicket, saveState } from '@/lib/store';
 import { calculateXP, getTodayDateStr, calculateLevel } from '@/lib/missions';
 import MissionCard from '@/components/MissionCard';
 import StreakBadge from '@/components/StreakBadge';
@@ -565,9 +565,7 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
         onReset={handleReset}
         onResetDailyPack={() => {
           if (!state) return;
-          const newState = { ...state, ticketClaimedDate: '', packsAvailable: 0 };
-          import('@/lib/store').then(({ saveState }) => saveState(newState));
-          setState(newState);
+          setState(resetDailyTicket(state));
         }}
         streak={state.currentStreak}
         totalDays={state.totalDaysCompleted}

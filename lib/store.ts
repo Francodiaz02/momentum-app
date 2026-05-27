@@ -1,4 +1,4 @@
-import { AppState, DayRecord } from './types';
+import { AppState, DayRecord, PackType } from './types';
 import { generateDailyMissions, getTodayDateStr, calculateXP, calculateLevel } from './missions';
 import { checkNewBadges } from './badges';
 import { generatePackStickers } from './stickers';
@@ -19,6 +19,7 @@ function getDefaultState(): AppState {
     totalMoviesWatched: 0, totalChatSessions: 0, totalShadowSessions: 0,
     totalFruitsEaten: 0,
     badgesUnlocked: [], newlyUnlockedBadge: null,
+    coins: 30,
     ticketClaimedDate: '',
     ownedStickers: [],
     pendingPack: null,
@@ -55,6 +56,7 @@ export function loadState(): AppState {
     if (state.ownedStickers === undefined) state.ownedStickers = [];
     if (state.pendingPack === undefined) state.pendingPack = null;
     if (state.packsAvailable === undefined) state.packsAvailable = 0;
+    if (state.coins === undefined) state.coins = 0;
 
     const today = getTodayDateStr();
     if (state.lastOpenedDate !== today) {
@@ -130,10 +132,17 @@ export function completeMission(state: AppState, missionId: string, minMode: boo
   if (mission.subtype === 'abs') totalAbs += 40; // avg of 30-50
   if (mission.category === 'fruit') totalFruitsEaten += 1;
 
+  // Coins per mission
+  let coinsEarned = 8;
+  if (mission.category === 'fruit') coinsEarned = 16; // x2 for fruit
+  const completionBonus = allDone ? 20 : 0;
+  const newCoins = state.coins + coinsEarned + completionBonus;
+
   const updatedState: AppState = {
     ...state,
     todayMissions: newMissions,
     todayCompleted: allDone,
+    coins: newCoins,
     totalRuns, totalPushups, totalAbs, totalEnglishSessions,
     totalSpeakingSessions, totalMoviesWatched, totalChatSessions,
     totalShadowSessions, totalFruitsEaten,
@@ -175,15 +184,26 @@ export function claimTicketAndGetPack(state: AppState): AppState {
   return newState;
 }
 
-export function openPack(state: AppState): AppState {
+export function openPack(state: AppState, packType: PackType = 'free'): AppState {
   if (state.packsAvailable <= 0) return state;
   const seed = Date.now();
-  const packStickers = generatePackStickers(seed);
+  const packStickers = generatePackStickers(seed, packType);
   const newState = {
     ...state,
     packsAvailable: state.packsAvailable - 1,
     pendingPack: packStickers,
   };
+  saveState(newState);
+  return newState;
+}
+
+export function buyAndOpenPack(state: AppState, packType: 'intermediate' | 'premium'): AppState {
+  const costs: Record<string, number> = { intermediate: 100, premium: 250 };
+  const cost = costs[packType];
+  if (state.coins < cost) return state;
+  const seed = Date.now();
+  const packStickers = generatePackStickers(seed, packType);
+  const newState = { ...state, coins: state.coins - cost, pendingPack: packStickers };
   saveState(newState);
   return newState;
 }

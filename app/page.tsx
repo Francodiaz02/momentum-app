@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Settings } from 'lucide-react';
 import { AppState } from '@/lib/types';
-import { loadState, completeMission, uncompleteMission, toggleMinMode, claimTicketAndGetPack, clearUnlockedBadge, openPack, claimPack } from '@/lib/store';
+import { loadState, completeMission, uncompleteMission, toggleMinMode, claimTicketAndGetPack, clearUnlockedBadge, openPack, claimPack, buyAndOpenPack } from '@/lib/store';
 import { calculateXP, getTodayDateStr, calculateLevel } from '@/lib/missions';
 import MissionCard from '@/components/MissionCard';
 import StreakBadge from '@/components/StreakBadge';
@@ -15,9 +15,9 @@ import BadgeUnlockModal from '@/components/BadgeUnlockModal';
 import DailyTicket from '@/components/DailyTicket';
 import PackOpening from '@/components/PackOpening';
 import AlbumView from '@/components/AlbumView';
-import RelicsView from '@/components/RelicsView';
+import ShopView from '@/components/ShopView';
 
-type Tab = 'today' | 'album' | 'relics' | 'stats';
+type Tab = 'today' | 'album' | 'shop' | 'stats';
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
@@ -26,6 +26,7 @@ export default function Home() {
   const [justCompleted, setJustCompleted] = useState(false);
   const [levelUpMsg, setLevelUpMsg] = useState<string | null>(null);
   const [packOpeningActive, setPackOpeningActive] = useState(false);
+  const [activePackType, setActivePackType] = useState<'free' | 'intermediate' | 'premium'>('free');
   const prevLevelRef = useRef<number>(1);
 
   useEffect(() => {
@@ -76,16 +77,31 @@ export default function Home() {
     prevLevelRef.current = 1;
   };
 
-  const handleClaimTicket = () => {
+  const handleClaimDailyPack = () => {
     if (!state) return;
-    setState(claimTicketAndGetPack(state));
+    const s1 = claimTicketAndGetPack(state);
+    const s2 = openPack(s1, 'free');
+    setState(s2);
+    setActivePackType('free');
+    setPackOpeningActive(true);
   };
 
   const handleOpenPack = () => {
     if (!state || state.packsAvailable <= 0) return;
-    const newState = openPack(state);
+    const newState = openPack(state, 'free');
     setState(newState);
+    setActivePackType('free');
     setPackOpeningActive(true);
+  };
+
+  const handleBuyPack = (packType: 'intermediate' | 'premium') => {
+    if (!state) return;
+    const newState = buyAndOpenPack(state, packType);
+    if (newState !== state) {
+      setState(newState);
+      setActivePackType(packType);
+      setPackOpeningActive(true);
+    }
   };
 
   const handleClaimPackStickers = () => {
@@ -134,7 +150,7 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
   const tabs: { id: Tab; label: string }[] = [
     { id: 'today', label: 'Hoy' },
     { id: 'album', label: 'Álbum' },
-    { id: 'relics', label: 'Logros' },
+    { id: 'shop', label: 'Tienda' },
     { id: 'stats', label: 'Stats' },
   ];
 
@@ -147,6 +163,7 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
       {/* Pack opening modal */}
       <PackOpening
         pack={packOpeningActive ? state.pendingPack : null}
+        packType={activePackType}
         onClaim={handleClaimPackStickers}
         onClose={() => setPackOpeningActive(false)}
         ownedStickers={state.ownedStickers}
@@ -192,7 +209,16 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
           </h1>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {/* Coins */}
+          <div style={{
+            background: '#1a1200', border: '1px solid #7a5500',
+            borderRadius: '20px', padding: '6px 10px',
+            display: 'flex', alignItems: 'center', gap: '4px',
+            fontSize: '13px', fontWeight: '800', color: '#f59e0b',
+          }}>
+            🪙 {state.coins}
+          </div>
           {/* Min Mode */}
           <motion.button
             whileTap={{ scale: 0.88 }}
@@ -269,8 +295,8 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
               {/* Daily Ticket */}
               <DailyTicket
                 claimed={ticketClaimed}
-                onClaim={handleClaimTicket}
                 packsAvailable={state.packsAvailable}
+                onClaim={handleClaimDailyPack}
                 onOpenPack={handleOpenPack}
               />
 
@@ -397,16 +423,16 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
             </motion.div>
           )}
 
-          {/* RELICS */}
-          {activeTab === 'relics' && (
+          {/* SHOP */}
+          {activeTab === 'shop' && (
             <motion.div
-              key="relics"
+              key="shop"
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.18 }}
             >
-              <RelicsView unlockedIds={state.badgesUnlocked} />
+              <ShopView coins={state.coins} onBuy={handleBuyPack} />
             </motion.div>
           )}
 

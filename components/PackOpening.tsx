@@ -2,15 +2,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ALL_STICKERS, RARITY_CONFIG } from '@/lib/stickers';
+import type { PackType } from '@/lib/types';
 
 interface Props {
   pack: string[] | null;
+  packType?: PackType;
   onClaim: () => void;
   onClose: () => void;
   ownedStickers: { stickerId: string; count: number }[];
 }
 
-export default function PackOpening({ pack, onClaim, onClose, ownedStickers }: Props) {
+export default function PackOpening({ pack, packType = 'free', onClaim, onClose, ownedStickers }: Props) {
   const [opened, setOpened] = useState(false);
   const [revealedCount, setRevealedCount] = useState(0);
   const [done, setDone] = useState(false);
@@ -82,37 +84,50 @@ export default function PackOpening({ pack, onClaim, onClose, ownedStickers }: P
               transition={{ duration: 2, repeat: Infinity }}
               style={{ marginBottom: '28px' }}
             >
-              <div style={{
-                width: '140px', height: '190px', margin: '0 auto',
-                background: 'linear-gradient(160deg, #1a0e00, #2a1800)',
-                border: '2px solid #8a5a00',
-                borderRadius: '16px',
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-                gap: '12px',
-                boxShadow: '0 0 30px rgba(245,158,11,0.25)',
-                position: 'relative', overflow: 'hidden',
-              }}>
-                <motion.div
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  style={{ fontSize: '40px' }}
-                >
-                  ◈
-                </motion.div>
-                <div style={{ fontSize: '11px', color: '#f59e0b', fontWeight: '800', letterSpacing: '0.14em' }}>SOBRE</div>
-                <div style={{ fontSize: '10px', color: '#7a5a20' }}>5 figuritas</div>
-                {/* Shimmer */}
-                <motion.div
-                  animate={{ x: ['-100%', '200%'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                  style={{
-                    position: 'absolute', inset: 0, width: '50%',
-                    background: 'linear-gradient(90deg, transparent, rgba(245,158,11,0.1), transparent)',
-                    pointerEvents: 'none',
-                  }}
-                />
-              </div>
+              {(() => {
+                const packVisuals = {
+                  free:         { bg: 'linear-gradient(160deg, #1a0e00, #2a1800)', border: '#8a5a00', glow: 'rgba(245,158,11,0.25)', color: '#f59e0b', icon: '🎁', label: 'SOBRE GRATIS' },
+                  intermediate: { bg: 'linear-gradient(160deg, #001a2a, #00253a)', border: '#0e5a8a', glow: 'rgba(56,189,248,0.25)', color: '#38bdf8', icon: '📦', label: 'SOBRE INTER.' },
+                  premium:      { bg: 'linear-gradient(160deg, #100822, #180c30)', border: '#7a5a00', glow: 'rgba(245,158,11,0.4)',  color: '#f59e0b', icon: '✨', label: 'SOBRE PREMIUM' },
+                };
+                const v = packVisuals[packType];
+                return (
+                  <div style={{
+                    width: '140px', height: '190px', margin: '0 auto',
+                    background: v.bg,
+                    border: `2px solid ${v.border}`,
+                    borderRadius: '16px',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    gap: '12px',
+                    boxShadow: `0 0 30px ${v.glow}`,
+                    position: 'relative', overflow: 'hidden',
+                  }}>
+                    <motion.div
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      style={{ fontSize: '40px' }}
+                    >
+                      {v.icon}
+                    </motion.div>
+                    <div style={{ fontSize: '10px', color: v.color, fontWeight: '800', letterSpacing: '0.1em', textAlign: 'center', padding: '0 8px' }}>{v.label}</div>
+                    <div style={{ fontSize: '10px', color: '#555' }}>5 figuritas</div>
+                    {packType === 'premium' && (
+                      <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#f59e0b', borderRadius: '4px', padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#000' }}>★★★★</div>
+                    )}
+                    {/* Shimmer */}
+                    <motion.div
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                      style={{
+                        position: 'absolute', inset: 0, width: '50%',
+                        background: `linear-gradient(90deg, transparent, ${v.glow.replace('0.25', '0.12').replace('0.4', '0.15')}, transparent)`,
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </div>
+                );
+              })()}
             </motion.div>
           ) : (
             /* Revealed stickers */

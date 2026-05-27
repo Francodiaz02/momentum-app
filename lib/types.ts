@@ -1,4 +1,5 @@
 export type MissionCategory = 'english' | 'fitness' | 'fruit';
+export type PackType = 'free' | 'intermediate' | 'premium';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 export type MissionSubtype = 'run' | 'pushups' | 'abs' | 'speaking' | 'movie' | 'chat' | 'shadow' | 'music' | 'reading' | 'fruit';
 
@@ -60,6 +61,8 @@ export interface AppState {
   // Badges
   badgesUnlocked: string[];
   newlyUnlockedBadge: string | null;
+  // Economy
+  coins: number;
   // Daily ticket
   ticketClaimedDate: string;
   // Sticker album

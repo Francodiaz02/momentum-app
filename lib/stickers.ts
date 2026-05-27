@@ -1,4 +1,5 @@
 export type StickerRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type { PackType } from './types';
 export type StickerCategory = 'mindset' | 'fitness' | 'english' | 'discipline' | 'energy';
 
 export interface StickerDef {
@@ -89,20 +90,29 @@ export const RARITY_CONFIG = {
   legendary: { label: 'Legendaria', color: '#f59e0b', bg: '#1a0e00', border: '#8a5a00', glow: '0 0 24px rgba(245,158,11,0.5)', weight: 5 },
 };
 
-export function generatePackStickers(seed: number): string[] {
+import type { PackType } from './types';
+
+const PACK_WEIGHTS: Record<PackType, Record<StickerRarity, number>> = {
+  free:         { common: 50, rare: 30, epic: 15, legendary: 5 },
+  intermediate: { common: 35, rare: 40, epic: 20, legendary: 5 },
+  premium:      { common: 20, rare: 30, epic: 35, legendary: 15 },
+};
+
+export function generatePackStickers(seed: number, packType: PackType = 'free'): string[] {
+  const weights = PACK_WEIGHTS[packType];
+  const total = weights.common + weights.rare + weights.epic + weights.legendary;
   const result: string[] = [];
-  const totalWeight = 50 + 30 + 15 + 5; // 100
 
   for (let i = 0; i < 5; i++) {
-    let rand = Math.abs((seed * 1664525 + 1013904223 * (i + 1)) & 0x7fffffff) % totalWeight;
+    const rand = Math.abs((seed * 1664525 + 1013904223 * (i + 1) + i * 31337) & 0x7fffffff) % total;
     let rarity: StickerRarity;
-    if (rand < 50) rarity = 'common';
-    else if (rand < 80) rarity = 'rare';
-    else if (rand < 95) rarity = 'epic';
+    if (rand < weights.common) rarity = 'common';
+    else if (rand < weights.common + weights.rare) rarity = 'rare';
+    else if (rand < weights.common + weights.rare + weights.epic) rarity = 'epic';
     else rarity = 'legendary';
 
     const pool = ALL_STICKERS.filter(s => s.rarity === rarity);
-    const picked = pool[Math.abs((seed * (i + 7) + 31337) & 0x7fffffff) % pool.length];
+    const picked = pool[Math.abs((seed * (i + 7) * 31337 + i * 1234567) & 0x7fffffff) % pool.length];
     result.push(picked.id);
   }
   return result;

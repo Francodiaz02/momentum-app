@@ -155,7 +155,7 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', maxWidth: '480px', margin: '0 auto', paddingBottom: '60px' }}>
+    <div style={{ minHeight: '100vh', background: '#0a0a0f', maxWidth: '480px', margin: '0 auto', paddingBottom: '80px' }}>
 
       {/* Badge unlock modal */}
       <BadgeUnlockModal badgeId={state.newlyUnlockedBadge} onClose={handleClearBadge} />
@@ -194,7 +194,7 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
       </AnimatePresence>
 
       {/* Header */}
-      <div style={{ padding: '28px 20px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ padding: '20px 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <p style={{ margin: 0, fontSize: '12px', color: '#444', fontWeight: '600', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             {greeting()}
@@ -216,8 +216,10 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
             borderRadius: '20px', padding: '6px 10px',
             display: 'flex', alignItems: 'center', gap: '4px',
             fontSize: '13px', fontWeight: '800', color: '#f59e0b',
+            maxWidth: '80px', overflow: 'hidden',
           }}>
-            🪙 {state.coins}
+            <span style={{ flexShrink: 0 }}>🪙</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{state.coins}</span>
           </div>
           {/* Min Mode */}
           <motion.button
@@ -257,18 +259,18 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
       <div style={{ margin: '16px 20px 0', height: '1px', background: 'linear-gradient(90deg, transparent, #1a1a3e, #1a3a1a, transparent)' }} />
 
       {/* Tabs */}
-      <div style={{ display: 'flex', padding: '14px 20px 0', gap: '4px' }}>
+      <div style={{ display: 'flex', padding: '12px 16px 0', gap: '4px' }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
-              flex: 1, padding: '7px 4px',
+              flex: 1, padding: '8px 4px',
               background: activeTab === tab.id ? '#fff' : 'transparent',
               border: 'none', borderRadius: '10px',
               cursor: 'pointer',
               color: activeTab === tab.id ? '#000' : '#444',
-              fontSize: '12px', fontWeight: '700',
+              fontSize: '11px', fontWeight: '700',
               transition: 'all 0.18s',
             }}
           >
@@ -278,7 +280,7 @@ const todayXP = calculateXP(state.todayMissions, state.minModeActive);
       </div>
 
       {/* Content */}
-      <div style={{ padding: '18px 20px 0' }}>
+      <div style={{ padding: '16px 16px 0' }}>
         <AnimatePresence mode="wait">
 
           {/* TODAY */}

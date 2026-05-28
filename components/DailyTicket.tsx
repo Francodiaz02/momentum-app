@@ -37,6 +37,7 @@ export default function DailyTicket({ claimed, packsAvailable, onClaim, onOpenPa
           borderRadius: '18px', padding: '16px 20px',
           cursor: 'pointer', textAlign: 'left',
           display: 'flex', alignItems: 'center', gap: '14px',
+          minHeight: '72px',
         }}
       >
         <span style={{ fontSize: '28px' }}>📦</span>
@@ -71,6 +72,7 @@ export default function DailyTicket({ claimed, packsAvailable, onClaim, onOpenPa
         cursor: 'pointer',
         display: 'flex', alignItems: 'center', gap: '14px',
         position: 'relative', overflow: 'hidden',
+        minHeight: '72px',
       }}
     >
       {/* Shimmer */}

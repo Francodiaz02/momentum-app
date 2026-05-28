@@ -63,150 +63,92 @@ function EnvelopeCard({ pack, canAfford, onBuy }: {
   canAfford: boolean;
   onBuy: () => void;
 }) {
-  const W = 160;
-  const H = 220;
+  const imgSrc = pack.type === 'intermediate' ? '/packs/silver.png' : '/packs/gold.png';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', flex: 1 }}>
-      {/* Envelope shape */}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: 'calc(50% - 8px)', maxWidth: '170px' }}>
+      {/* Pack image */}
       <motion.div
-        whileHover={{ y: -4, scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        animate={{ boxShadow: [pack.envGlow, pack.envGlow.replace('0.2', '0.35').replace('0.12', '0.22'), pack.envGlow] }}
+        whileHover={{ y: -6, scale: 1.03 }}
+        whileTap={{ scale: 0.96 }}
+        animate={{ filter: canAfford
+          ? [`drop-shadow(0 0 6px ${pack.accentColor}44)`, `drop-shadow(0 0 16px ${pack.accentColor}88)`, `drop-shadow(0 0 6px ${pack.accentColor}44)`]
+          : ['none'] }}
         transition={{ duration: 2.5, repeat: Infinity }}
         onClick={canAfford ? onBuy : undefined}
         style={{
-          width: `${W}px`, height: `${H}px`,
-          position: 'relative',
+          width: '100%',
           cursor: canAfford ? 'pointer' : 'default',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          border: `1.5px solid ${pack.envBorder}`,
-          background: pack.envBody,
+          position: 'relative',
         }}
       >
-        {/* Top flap (envelope fold) */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          height: '52px',
-          background: pack.envTop,
-          clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
-          zIndex: 2,
-        }} />
-
-        {/* Flap fold line */}
-        <div style={{
-          position: 'absolute', top: '51px', left: 0, right: 0,
-          height: '1px', background: pack.envBorder, zIndex: 3,
-          opacity: 0.6,
-        }} />
-
-        {/* Shine overlay */}
-        <motion.div
-          animate={{ x: ['-120%', '120%'] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 1.5 }}
-          style={{
-            position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none',
-            background: `linear-gradient(105deg, transparent 30%, ${pack.envShine} 50%, transparent 70%)`,
-          }}
-        />
-
-        {/* Content area */}
-        <div style={{
-          position: 'absolute', top: '62px', left: 0, right: 0, bottom: 0,
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          padding: '8px 12px', zIndex: 1,
-        }}>
-          {/* Main symbol */}
+        {/* Shine sweep */}
+        <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
+          <img
+            src={imgSrc}
+            alt={pack.type === 'intermediate' ? 'Silver Pack' : 'Gold Pack'}
+            style={{
+              width: '100%',
+              display: 'block',
+              borderRadius: '8px',
+              filter: canAfford ? 'none' : 'grayscale(0.6) brightness(0.5)',
+            }}
+          />
+          {/* Shine animation */}
           <motion.div
-            animate={{ scale: [1, 1.08, 1], opacity: [0.8, 1, 0.8] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            style={{ fontSize: '32px', color: pack.symbolColor, marginBottom: '6px', fontWeight: '900' }}
-          >
-            {pack.symbol}
-          </motion.div>
-
-          {/* Pack name */}
-          <div style={{
-            fontSize: '11px', fontWeight: '900', color: pack.accentColor,
-            letterSpacing: '0.12em', textTransform: 'uppercase', textAlign: 'center',
-            marginBottom: '4px',
-          }}>
-            {pack.name}
-          </div>
-
-          {/* Stars */}
-          <div style={{ fontSize: '9px', color: pack.accentColor, opacity: 0.7, marginBottom: '10px' }}>
-            {'★'.repeat(pack.stars)}
-          </div>
-
-          {/* Odds mini pills */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
-            {pack.odds.map(o => (
-              <div key={o.label} style={{
-                display: 'flex', justifyContent: 'space-between',
-                fontSize: '9px', padding: '2px 6px',
-                background: 'rgba(0,0,0,0.3)', borderRadius: '4px',
-              }}>
-                <span style={{ color: '#666' }}>{o.label}</span>
-                <span style={{ color: o.color, fontWeight: '700' }}>{o.pct}</span>
+            animate={{ x: ['-150%', '150%'] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
+            style={{
+              position: 'absolute', inset: 0, pointerEvents: 'none',
+              background: `linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%)`,
+            }}
+          />
+          {!canAfford && (
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '8px',
+              background: 'rgba(0,0,0,0.55)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{ fontSize: '12px', color: '#666', fontWeight: '700', textAlign: 'center' }}>
+                🔒<br />{pack.cost} 🪙
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom crease lines (envelope detail) */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '36px', zIndex: 1, pointerEvents: 'none',
-        }}>
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0,
-            width: 0, height: 0,
-            borderLeft: `${W/2}px solid transparent`,
-            borderRight: '0px solid transparent',
-            borderBottom: `36px solid ${pack.envFold}`,
-          }} />
-          <div style={{
-            position: 'absolute', bottom: 0, right: 0,
-            width: 0, height: 0,
-            borderRight: `${W/2}px solid transparent`,
-            borderLeft: '0px solid transparent',
-            borderBottom: `36px solid ${pack.envFold}`,
-          }} />
-        </div>
-
-        {/* Disabled overlay */}
-        {!canAfford && (
-          <div style={{
-            position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)',
-            zIndex: 10, borderRadius: '12px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <div style={{ fontSize: '11px', color: '#555', fontWeight: '700', textAlign: 'center' }}>
-              🔒<br />{pack.cost} 🪙
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </motion.div>
+
+      {/* Odds */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' }}>
+        {pack.odds.map(o => (
+          <div key={o.label} style={{
+            display: 'flex', justifyContent: 'space-between',
+            fontSize: '9px', padding: '2px 6px',
+            background: 'rgba(255,255,255,0.04)', borderRadius: '4px',
+          }}>
+            <span style={{ color: '#666' }}>{o.label}</span>
+            <span style={{ color: o.color, fontWeight: '700' }}>{o.pct}</span>
+          </div>
+        ))}
+      </div>
 
       {/* Price + buy button */}
       <motion.button
         whileTap={canAfford ? { scale: 0.94 } : {}}
         onClick={canAfford ? onBuy : undefined}
         style={{
-          width: `${W}px`,
+          width: '100%',
           background: canAfford ? pack.btnBg : '#111',
           border: `1px solid ${canAfford ? pack.btnBorder : '#222'}`,
-          borderRadius: '10px', padding: '10px 0',
+          borderRadius: '10px', padding: '0',
           cursor: canAfford ? 'pointer' : 'not-allowed',
           fontSize: '12px', fontWeight: '800',
           color: canAfford ? pack.accentColor : '#444',
           textAlign: 'center',
+          minHeight: '44px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
-        {canAfford ? `${pack.cost} 🪙` : `Faltan ${pack.cost - 0} 🪙`}
+        {canAfford ? `${pack.cost} 🪙` : `Faltan ${pack.cost} 🪙`}
       </motion.button>
     </div>
   );
@@ -225,7 +167,7 @@ export default function ShopView({ coins, onBuy }: Props) {
       </div>
 
       {/* Pack cards side by side */}
-      <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '28px' }}>
+      <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '28px' }}>
         {packs.map(pack => (
           <EnvelopeCard
             key={pack.type}

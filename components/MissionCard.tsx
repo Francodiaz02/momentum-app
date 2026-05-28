@@ -234,6 +234,7 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
                 color: '#fff', fontSize: '12px', fontWeight: '800',
                 boxShadow: `0 2px 14px ${c.glow}`,
                 letterSpacing: '0.02em',
+                minHeight: '36px', minWidth: '56px',
               }}
             >
               Done
@@ -256,6 +257,7 @@ export default function MissionCard({ mission, minMode, onComplete, onUndo, inde
                 color: '#444',
                 display: 'flex', alignItems: 'center', gap: '4px',
                 fontSize: '11px',
+                minHeight: '36px', minWidth: '56px',
               }}
             >
               <RotateCcw size={11} />

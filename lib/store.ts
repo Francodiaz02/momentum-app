@@ -79,8 +79,13 @@ export function loadState(): AppState {
         state.currentStreak += 1;
         if (state.currentStreak > state.longestStreak) state.longestStreak = state.currentStreak;
         state.totalDaysCompleted += 1;
+        const prevLevel = state.level;
         state.totalXP += calculateXP(state.todayMissions, state.minModeActive);
-        state.level = calculateLevel(state.totalXP);
+        const newLevel = calculateLevel(state.totalXP);
+        if (newLevel > prevLevel) {
+          state.coins = (state.coins ?? 0) + 30 * (newLevel - prevLevel);
+        }
+        state.level = newLevel;
       } else {
         const hadYesterday = state.history.find(h => h.date === yesterdayStr && h.completed);
         if (!hadYesterday && state.currentStreak > 0) state.currentStreak = Math.max(0, state.currentStreak - 1);

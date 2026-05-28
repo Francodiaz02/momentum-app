@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ALL_STICKERS, RARITY_CONFIG } from '@/lib/stickers';
+import { ALL_STICKERS, RARITY_CONFIG, StickerDef } from '@/lib/stickers';
 import type { PackType } from '@/lib/types';
 
 interface Props {
@@ -10,6 +10,152 @@ interface Props {
   onClaim: () => void;
   onClose: () => void;
   ownedStickers: { stickerId: string; count: number }[];
+}
+
+function FifaCardReveal({ sticker, index, isNew }: { sticker: StickerDef; index: number; isNew: boolean }) {
+  const cfg = RARITY_CONFIG[sticker.rarity];
+  const isLegendary = sticker.rarity === 'legendary';
+  const isEpic = sticker.rarity === 'epic';
+
+  const avatarBg = {
+    common: '#1e2a3a',
+    rare: '#0d1f35',
+    epic: '#2a0d4a',
+    legendary: '#3d2000',
+  }[sticker.rarity];
+
+  return (
+    <motion.div
+      initial={{ rotateY: 90, scale: 0.6, opacity: 0 }}
+      animate={{ rotateY: 0, scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 20, delay: index * 0.05 }}
+      style={{
+        minWidth: '80px',
+        width: '80px',
+        aspectRatio: '2/3',
+        background: cfg.bg,
+        border: `1.5px solid ${cfg.border}`,
+        borderRadius: '12px',
+        padding: '8px 6px 6px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        boxShadow: cfg.glow,
+        position: 'relative',
+        flexShrink: 0,
+        overflow: 'hidden',
+      }}
+    >
+      {/* NEW / duplicate badge */}
+      {isNew ? (
+        <div style={{
+          position: 'absolute', top: '-5px', right: '-5px',
+          background: '#22c55e', borderRadius: '6px',
+          padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#000',
+          zIndex: 10,
+        }}>NEW</div>
+      ) : (
+        <div style={{
+          position: 'absolute', top: '-5px', right: '-5px',
+          background: '#444', borderRadius: '6px',
+          padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#ccc',
+          zIndex: 10,
+        }}>×DUP</div>
+      )}
+
+      {/* Legendary shimmer */}
+      {isLegendary && (
+        <motion.div
+          animate={{ x: ['-120%', '120%'] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', repeatDelay: 0.5 }}
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(105deg, transparent 30%, rgba(245,158,11,0.25) 50%, transparent 70%)',
+            pointerEvents: 'none', zIndex: 1,
+          }}
+        />
+      )}
+
+      {/* Rating + flag */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '2px', zIndex: 2 }}>
+        <span style={{ fontSize: '11px', fontWeight: '900', color: cfg.color }}>{sticker.rating}</span>
+        <span style={{ fontSize: '10px' }}>{sticker.flag}</span>
+      </div>
+
+      {/* Position */}
+      <div style={{ fontSize: '7px', fontWeight: '800', color: cfg.color, opacity: 0.8, alignSelf: 'flex-start', marginBottom: '4px', zIndex: 2 }}>
+        {sticker.position}
+      </div>
+
+      {/* Avatar */}
+      <div style={{
+        width: '36px', height: '36px',
+        borderRadius: '50%',
+        background: avatarBg,
+        border: `1.5px solid ${cfg.border}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: '4px',
+        position: 'relative', zIndex: 2,
+        flexShrink: 0,
+      }}>
+        {isLegendary && (
+          <motion.div
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              boxShadow: '0 0 10px rgba(245,158,11,0.8)',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+        <span style={{ fontSize: '11px', fontWeight: '900', color: cfg.color }}>{sticker.initials}</span>
+      </div>
+
+      {/* Name */}
+      <div style={{
+        fontSize: '8px', fontWeight: '900', color: cfg.color,
+        textAlign: 'center', lineHeight: 1.1, zIndex: 2,
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%',
+      }}>
+        {sticker.name}
+      </div>
+
+      {/* Country */}
+      <div style={{
+        fontSize: '6px', color: '#777', textAlign: 'center',
+        marginTop: '2px', zIndex: 2,
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%',
+      }}>
+        {sticker.country}
+      </div>
+
+      {/* Rarity */}
+      <div style={{
+        marginTop: '3px',
+        background: cfg.color + '22',
+        border: `1px solid ${cfg.color}44`,
+        borderRadius: '4px', padding: '1px 5px',
+        fontSize: '6px', fontWeight: '800', color: cfg.color,
+        zIndex: 2,
+      }}>
+        {cfg.label.toUpperCase()}
+      </div>
+
+      {/* Epic/legendary glow */}
+      {(isLegendary || isEpic) && (
+        <motion.div
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ duration: 1.8, repeat: Infinity }}
+          style={{
+            position: 'absolute', inset: 0, borderRadius: '12px',
+            boxShadow: cfg.glow,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+    </motion.div>
+  );
 }
 
 export default function PackOpening({ pack, packType = 'free', onClaim, onClose, ownedStickers }: Props) {
@@ -41,6 +187,14 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
   if (!pack) return null;
 
   const stickers = pack.map(id => ALL_STICKERS.find(s => s.id === id)!).filter(Boolean);
+  const hasLegendary = stickers.some(s => s.rarity === 'legendary');
+
+  const packVisuals = {
+    free:         { bg: 'linear-gradient(160deg, #1a0e00, #2a1800)', border: '#8a5a00', glow: 'rgba(245,158,11,0.25)', color: '#f59e0b', label: 'SILVER', labelColor: '#f59e0b' },
+    intermediate: { bg: 'linear-gradient(160deg, #001a2a, #00253a)', border: '#0e5a8a', glow: 'rgba(56,189,248,0.25)', color: '#38bdf8', label: 'SILVER', labelColor: '#38bdf8' },
+    premium:      { bg: 'linear-gradient(160deg, #100822, #180c30)', border: '#7a5a00', glow: 'rgba(245,158,11,0.4)',  color: '#f59e0b', label: 'GOLD',   labelColor: '#f59e0b' },
+  };
+  const v = packVisuals[packType];
 
   return (
     <AnimatePresence>
@@ -50,10 +204,14 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
         exit={{ opacity: 0 }}
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(0,0,0,0.88)',
+          background: hasLegendary && done
+            ? 'rgba(0,0,0,0.92)'
+            : 'rgba(0,0,0,0.88)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 500,
-          padding: '20px',
+          paddingTop: 'env(safe-area-inset-top, 20px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 20px)',
+          overflowY: 'auto',
         }}
         onClick={e => { if (e.target === e.currentTarget && done) { onClaim(); onClose(); } }}
       >
@@ -66,145 +224,59 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
             background: '#0d0d18',
             border: '1px solid #2a2a40',
             borderRadius: '24px',
-            padding: '28px 20px',
+            padding: '24px 16px 20px',
             textAlign: 'center',
+            margin: '20px 16px',
           }}
         >
-          <div style={{ fontSize: '11px', color: '#444', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' }}>
-            SOBRE DE FIGURITAS
+          <div style={{ fontSize: '11px', color: '#444', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>
+            SOBRE DE JUGADORES
           </div>
-          <div style={{ fontSize: '22px', fontWeight: '900', color: '#fff', marginBottom: '24px' }}>
-            {!opened ? '¡Nuevo sobre!' : done ? 'Figuritas obtenidas' : 'Revelando...'}
+          <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '20px' }}>
+            {!opened ? '¡Nuevo sobre!' : done ? 'Jugadores obtenidos' : 'Revelando...'}
           </div>
 
           {!opened ? (
-            /* Closed pack */
+            /* Closed pack — real image */
             <motion.div
-              animate={{ y: [0, -6, 0] }}
+              animate={{ y: [0, -8, 0], filter: [`drop-shadow(0 0 8px ${v.glow})`, `drop-shadow(0 0 20px ${v.glow})`, `drop-shadow(0 0 8px ${v.glow})`] }}
               transition={{ duration: 2, repeat: Infinity }}
-              style={{ marginBottom: '28px' }}
+              style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center', position: 'relative' }}
             >
-              {(() => {
-                const packVisuals = {
-                  free:         { bg: 'linear-gradient(160deg, #1a0e00, #2a1800)', border: '#8a5a00', glow: 'rgba(245,158,11,0.25)', color: '#f59e0b', icon: '🎁', label: 'SOBRE GRATIS' },
-                  intermediate: { bg: 'linear-gradient(160deg, #001a2a, #00253a)', border: '#0e5a8a', glow: 'rgba(56,189,248,0.25)', color: '#38bdf8', icon: '📦', label: 'SOBRE INTER.' },
-                  premium:      { bg: 'linear-gradient(160deg, #100822, #180c30)', border: '#7a5a00', glow: 'rgba(245,158,11,0.4)',  color: '#f59e0b', icon: '✨', label: 'SOBRE PREMIUM' },
-                };
-                const v = packVisuals[packType];
-                return (
-                  <div style={{
-                    width: '140px', height: '190px', margin: '0 auto',
-                    background: v.bg,
-                    border: `2px solid ${v.border}`,
-                    borderRadius: '16px',
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center',
-                    gap: '12px',
-                    boxShadow: `0 0 30px ${v.glow}`,
-                    position: 'relative', overflow: 'hidden',
-                  }}>
-                    <motion.div
-                      animate={{ opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                      style={{ fontSize: '40px' }}
-                    >
-                      {v.icon}
-                    </motion.div>
-                    <div style={{ fontSize: '10px', color: v.color, fontWeight: '800', letterSpacing: '0.1em', textAlign: 'center', padding: '0 8px' }}>{v.label}</div>
-                    <div style={{ fontSize: '10px', color: '#555' }}>5 figuritas</div>
-                    {packType === 'premium' && (
-                      <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#f59e0b', borderRadius: '4px', padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#000' }}>★★★★</div>
-                    )}
-                    {/* Shimmer */}
-                    <motion.div
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                      style={{
-                        position: 'absolute', inset: 0, width: '50%',
-                        background: `linear-gradient(90deg, transparent, ${v.glow.replace('0.25', '0.12').replace('0.4', '0.15')}, transparent)`,
-                        pointerEvents: 'none',
-                      }}
-                    />
-                  </div>
-                );
-              })()}
+              {/* Shine sweep on image */}
+              <div style={{ position: 'relative', width: '180px' }}>
+                <img
+                  src={packType === 'premium' ? '/packs/gold.png' : '/packs/silver.png'}
+                  alt={packType === 'premium' ? 'Gold Pack' : 'Silver Pack'}
+                  style={{ width: '100%', display: 'block', borderRadius: '10px' }}
+                />
+                <motion.div
+                  animate={{ x: ['-150%', '150%'] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'linear', repeatDelay: 1.5 }}
+                  style={{
+                    position: 'absolute', inset: 0, pointerEvents: 'none', borderRadius: '10px', overflow: 'hidden',
+                    background: 'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)',
+                  }}
+                />
+              </div>
             </motion.div>
           ) : (
             /* Revealed stickers */
             <div style={{
-              display: 'flex', gap: '8px', marginBottom: '24px',
-              overflowX: 'auto', paddingBottom: '4px',
+              display: 'flex', gap: '8px', marginBottom: '20px',
+              overflowX: 'auto', paddingBottom: '6px',
               justifyContent: revealedCount < 5 ? 'flex-start' : 'center',
             }}>
               {stickers.slice(0, revealedCount).map((sticker, i) => {
-                const cfg = RARITY_CONFIG[sticker.rarity];
                 const owned = ownedStickers.find(o => o.stickerId === sticker.id);
                 const isNew = !owned;
                 return (
-                  <motion.div
+                  <FifaCardReveal
                     key={sticker.id + i}
-                    initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    style={{
-                      minWidth: '68px', width: '68px',
-                      background: cfg.bg,
-                      border: `1.5px solid ${cfg.border}`,
-                      borderRadius: '12px',
-                      padding: '10px 6px',
-                      display: 'flex', flexDirection: 'column',
-                      alignItems: 'center', gap: '5px',
-                      boxShadow: cfg.glow,
-                      position: 'relative',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {isNew && (
-                      <div style={{
-                        position: 'absolute', top: '-6px', right: '-6px',
-                        background: '#22c55e', borderRadius: '6px',
-                        padding: '1px 5px', fontSize: '8px', fontWeight: '900', color: '#000',
-                      }}>
-                        NEW
-                      </div>
-                    )}
-                    {!isNew && (
-                      <div style={{
-                        position: 'absolute', top: '-6px', right: '-6px',
-                        background: '#444', borderRadius: '6px',
-                        padding: '1px 5px', fontSize: '8px', fontWeight: '900', color: '#ccc',
-                      }}>
-                        ×{(owned?.count ?? 0) + 1}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '28px', lineHeight: 1 }}>{sticker.icon}</div>
-                    <div style={{ fontSize: '9px', fontWeight: '800', color: '#fff', textAlign: 'center', lineHeight: '1.2' }}>
-                      {sticker.name}
-                    </div>
-                    <div style={{ fontSize: '8px', color: '#666', textAlign: 'center', lineHeight: '1.2' }}>
-                      {sticker.subtitle}
-                    </div>
-                    <div style={{
-                      background: cfg.color + '22',
-                      border: `1px solid ${cfg.color}44`,
-                      borderRadius: '4px', padding: '1px 5px',
-                      fontSize: '8px', fontWeight: '800', color: cfg.color,
-                      marginTop: '2px',
-                    }}>
-                      {cfg.label.toUpperCase()}
-                    </div>
-                    {(sticker.rarity === 'epic' || sticker.rarity === 'legendary') && (
-                      <motion.div
-                        animate={{ opacity: [0.4, 1, 0.4] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        style={{
-                          position: 'absolute', inset: 0, borderRadius: '12px',
-                          boxShadow: cfg.glow,
-                          pointerEvents: 'none',
-                        }}
-                      />
-                    )}
-                  </motion.div>
+                    sticker={sticker}
+                    index={i}
+                    isNew={isNew}
+                  />
                 );
               })}
             </div>
@@ -218,12 +290,14 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
                 width: '100%',
                 background: 'linear-gradient(135deg, #92400e, #b45309)',
                 border: 'none', borderRadius: '14px',
-                padding: '14px', cursor: 'pointer',
+                padding: '0', cursor: 'pointer',
                 fontSize: '15px', fontWeight: '800', color: '#fff',
                 boxShadow: '0 4px 20px rgba(245,158,11,0.3)',
+                minHeight: '52px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              ✦ Abrir sobre ✦
+              ⚽ Abrir sobre ✦
             </motion.button>
           )}
 
@@ -237,8 +311,10 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
                 width: '100%',
                 background: 'linear-gradient(135deg, #14532d, #166534)',
                 border: 'none', borderRadius: '14px',
-                padding: '14px', cursor: 'pointer',
+                padding: '0', cursor: 'pointer',
                 fontSize: '15px', fontWeight: '800', color: '#4ade80',
+                minHeight: '52px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
               Guardar en álbum ✓
@@ -251,7 +327,8 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
               style={{
                 background: 'none', border: 'none',
                 color: '#444', fontSize: '12px', cursor: 'pointer',
-                marginTop: '12px',
+                marginTop: '12px', minHeight: '36px',
+                display: 'block', width: '100%',
               }}
             >
               cerrar

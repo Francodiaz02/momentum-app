@@ -1,90 +1,86 @@
 export type StickerRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type CollectibleCategory = 'warrior' | 'beast' | 'mystic' | 'shadow' | 'titan';
 export type { PackType } from './types';
-export type StickerCategory = 'goalkeeper' | 'defender' | 'midfielder' | 'forward';
 
 export interface StickerDef {
   id: string;
   name: string;
-  fullName: string;
-  country: string;
-  flag: string;
-  position: string;
-  rating: number;
-  era: string;
+  subtitle: string;
   rarity: StickerRarity;
-  category: StickerCategory;
-  initials: string;
-  cardColor: string;
+  category: CollectibleCategory;
+  imagePath: string | null;
+  power: number;
 }
 
 export const ALL_STICKERS: StickerDef[] = [
-  // LEGENDARY (7) — rating 97-99
-  { id:'p01', name:'MESSI', fullName:'Lionel Messi', country:'Argentina', flag:'🇦🇷', position:'CAM', rating:99, era:'2010s', rarity:'legendary', category:'midfielder', initials:'LM', cardColor:'#1a4a6e' },
-  { id:'p02', name:'RONALDO', fullName:'Cristiano Ronaldo', country:'Portugal', flag:'🇵🇹', position:'ST', rating:99, era:'2010s', rarity:'legendary', category:'forward', initials:'CR', cardColor:'#6e1a1a' },
-  { id:'p03', name:'PELÉ', fullName:'Pelé', country:'Brasil', flag:'🇧🇷', position:'ST', rating:99, era:'1960s', rarity:'legendary', category:'forward', initials:'PE', cardColor:'#4a6e1a' },
-  { id:'p04', name:'MARADONA', fullName:'Diego Maradona', country:'Argentina', flag:'🇦🇷', position:'CAM', rating:99, era:'1980s', rarity:'legendary', category:'midfielder', initials:'DM', cardColor:'#1a1a6e' },
-  { id:'p05', name:'ZIDANE', fullName:'Zinedine Zidane', country:'Francia', flag:'🇫🇷', position:'CAM', rating:98, era:'2000s', rarity:'legendary', category:'midfielder', initials:'ZZ', cardColor:'#3a1a6e' },
-  { id:'p06', name:'CRUYFF', fullName:'Johan Cruyff', country:'Países Bajos', flag:'🇳🇱', position:'CF', rating:98, era:'1970s', rarity:'legendary', category:'forward', initials:'JC', cardColor:'#6e4a1a' },
-  { id:'p07', name:'R9', fullName:'Ronaldo Nazário', country:'Brasil', flag:'🇧🇷', position:'ST', rating:98, era:'2000s', rarity:'legendary', category:'forward', initials:'R9', cardColor:'#4a6e1a' },
+  // LEGENDARY (7)
+  { id:'ph01', name:'The Phantom',       subtitle:'Silent. Disciplined. Deadly.',     rarity:'legendary', category:'shadow',  imagePath:'/figuritas/ph01.png', power:99 },
+  { id:'vk01', name:'Void King',         subtitle:'From darkness, dominion.',         rarity:'legendary', category:'shadow',  imagePath:null, power:99 },
+  { id:'or01', name:'The Oracle',        subtitle:'He who sees all outcomes.',        rarity:'legendary', category:'mystic',  imagePath:null, power:98 },
+  { id:'it01', name:'Iron Titan',        subtitle:'Forged in the deepest forge.',     rarity:'legendary', category:'titan',   imagePath:null, power:98 },
+  { id:'ar01', name:'The Architect',     subtitle:'He designed the system.',          rarity:'legendary', category:'mystic',  imagePath:null, power:97 },
+  { id:'sb01', name:'Shadow Sovereign',  subtitle:'Rules where light cannot reach.',  rarity:'legendary', category:'shadow',  imagePath:null, power:97 },
+  { id:'ce01', name:'Crimson Emperor',   subtitle:'Blood-sworn to never fall.',       rarity:'legendary', category:'warrior', imagePath:null, power:97 },
 
-  // EPIC (19) — rating 92-97 (includes Mbappé)
-  { id:'p08', name:'BECKENBAUER', fullName:'Franz Beckenbauer', country:'Alemania', flag:'🇩🇪', position:'CB', rating:97, era:'1970s', rarity:'epic', category:'defender', initials:'FB', cardColor:'#1a3a5a' },
-  { id:'p09', name:'DI STÉFANO', fullName:'Alfredo Di Stéfano', country:'Argentina', flag:'🇦🇷', position:'CF', rating:97, era:'1950s', rarity:'epic', category:'forward', initials:'AD', cardColor:'#5a3a1a' },
-  { id:'p10', name:'PLATINI', fullName:'Michel Platini', country:'Francia', flag:'🇫🇷', position:'CAM', rating:96, era:'1980s', rarity:'epic', category:'midfielder', initials:'MP', cardColor:'#3a1a5a' },
-  { id:'p11', name:'RONALDINHO', fullName:'Ronaldinho', country:'Brasil', flag:'🇧🇷', position:'CAM', rating:96, era:'2000s', rarity:'epic', category:'midfielder', initials:'R10', cardColor:'#3a5a1a' },
-  { id:'p12', name:'HENRY', fullName:'Thierry Henry', country:'Francia', flag:'🇫🇷', position:'ST', rating:95, era:'2000s', rarity:'epic', category:'forward', initials:'TH', cardColor:'#5a1a1a' },
-  { id:'p13', name:'XAVI', fullName:'Xavi Hernández', country:'España', flag:'🇪🇸', position:'CM', rating:95, era:'2010s', rarity:'epic', category:'midfielder', initials:'XV', cardColor:'#5a1a1a' },
-  { id:'p14', name:'INIESTA', fullName:'Andrés Iniesta', country:'España', flag:'🇪🇸', position:'CAM', rating:95, era:'2010s', rarity:'epic', category:'midfielder', initials:'AI', cardColor:'#5a1a1a' },
-  { id:'p15', name:'BUFFON', fullName:'Gianluigi Buffon', country:'Italia', flag:'🇮🇹', position:'GK', rating:94, era:'2000s', rarity:'epic', category:'goalkeeper', initials:'GB', cardColor:'#1a1a5a' },
-  { id:'p16', name:'MALDINI', fullName:'Paolo Maldini', country:'Italia', flag:'🇮🇹', position:'CB', rating:94, era:'1990s', rarity:'epic', category:'defender', initials:'PM', cardColor:'#5a1a1a' },
-  { id:'p17', name:'VAN BASTEN', fullName:'Marco van Basten', country:'Países Bajos', flag:'🇳🇱', position:'ST', rating:94, era:'1980s', rarity:'epic', category:'forward', initials:'MB', cardColor:'#5a4a1a' },
-  { id:'p18', name:'YASHIN', fullName:'Lev Yashin', country:'URSS', flag:'🇷🇺', position:'GK', rating:93, era:'1960s', rarity:'epic', category:'goalkeeper', initials:'LY', cardColor:'#1a1a1a' },
-  { id:'p19', name:'ROBERTO CARLOS', fullName:'Roberto Carlos', country:'Brasil', flag:'🇧🇷', position:'LB', rating:93, era:'2000s', rarity:'epic', category:'defender', initials:'RC', cardColor:'#3a5a1a' },
-  { id:'p20', name:'CAFU', fullName:'Cafu', country:'Brasil', flag:'🇧🇷', position:'RB', rating:93, era:'2000s', rarity:'epic', category:'defender', initials:'CF', cardColor:'#3a5a1a' },
-  { id:'p21', name:'MODRIC', fullName:'Luka Modrić', country:'Croacia', flag:'🇭🇷', position:'CM', rating:93, era:'2010s', rarity:'epic', category:'midfielder', initials:'LM', cardColor:'#5a1a3a' },
-  { id:'p22', name:'NEYMAR', fullName:'Neymar Jr', country:'Brasil', flag:'🇧🇷', position:'LW', rating:92, era:'2010s', rarity:'epic', category:'forward', initials:'NJ', cardColor:'#3a4a1a' },
-  { id:'p23', name:'LEWANDOWSKI', fullName:'Robert Lewandowski', country:'Polonia', flag:'🇵🇱', position:'ST', rating:92, era:'2010s', rarity:'epic', category:'forward', initials:'RL', cardColor:'#5a3a1a' },
-  { id:'p24', name:'SALAH', fullName:'Mohamed Salah', country:'Egipto', flag:'🇪🇬', position:'RW', rating:92, era:'2010s', rarity:'epic', category:'forward', initials:'MS', cardColor:'#5a2a1a' },
-  { id:'p25', name:'DE BRUYNE', fullName:'Kevin De Bruyne', country:'Bélgica', flag:'🇧🇪', position:'CM', rating:92, era:'2010s', rarity:'epic', category:'midfielder', initials:'KD', cardColor:'#1a2a5a' },
-  { id:'p43', name:'MBAPPÉ', fullName:'Kylian Mbappé', country:'Francia', flag:'🇫🇷', position:'ST', rating:95, era:'2020s', rarity:'epic', category:'forward', initials:'KM', cardColor:'#1a1a5a' },
+  // EPIC (18)
+  { id:'sw01', name:'Shadow Wolf',       subtitle:'Hunts what hides in the night.',   rarity:'epic', category:'beast',   imagePath:null, power:94 },
+  { id:'cb01', name:'Crimson Beast',     subtitle:'Rage made physical.',              rarity:'epic', category:'beast',   imagePath:null, power:93 },
+  { id:'sh01', name:'Silent Hunter',     subtitle:'Never misses. Never forgives.',    rarity:'epic', category:'shadow',  imagePath:null, power:93 },
+  { id:'wp01', name:'War Prophet',       subtitle:'Sees the battle before it begins.',rarity:'epic', category:'warrior', imagePath:null, power:93 },
+  { id:'sl01', name:'Storm Lord',        subtitle:'Commands the tempest.',            rarity:'epic', category:'titan',   imagePath:null, power:92 },
+  { id:'nb01', name:'Night Baron',       subtitle:'Master of the hidden city.',       rarity:'epic', category:'shadow',  imagePath:null, power:92 },
+  { id:'gs01', name:'Ghost Swordsman',   subtitle:'Cuts without being seen.',         rarity:'epic', category:'warrior', imagePath:null, power:92 },
+  { id:'vm01', name:'Void Mage',         subtitle:'Bends reality to his will.',       rarity:'epic', category:'mystic',  imagePath:null, power:91 },
+  { id:'fb01', name:'Frost Beast',       subtitle:'Cold as the void between stars.',  rarity:'epic', category:'beast',   imagePath:null, power:91 },
+  { id:'ch01', name:'Chaos Herald',      subtitle:'Entropy given a voice.',           rarity:'epic', category:'mystic',  imagePath:null, power:91 },
+  { id:'tk01', name:'Thunder Knight',    subtitle:'Where he walks, storms follow.',   rarity:'epic', category:'warrior', imagePath:null, power:90 },
+  { id:'ab01', name:'Abyss Beast',       subtitle:'Rose from the deepest dark.',      rarity:'epic', category:'beast',   imagePath:null, power:90 },
+  { id:'dl01', name:'Death Lancer',      subtitle:'One strike. One end.',             rarity:'epic', category:'warrior', imagePath:null, power:90 },
+  { id:'mp01', name:'Mind Phantom',      subtitle:'Your thoughts are not your own.',  rarity:'epic', category:'shadow',  imagePath:null, power:89 },
+  { id:'sc01', name:'Shadow Colossus',   subtitle:'Darkness given impossible size.',  rarity:'epic', category:'titan',   imagePath:null, power:89 },
+  { id:'bb01', name:'Blood Baron',       subtitle:'Power demands sacrifice.',         rarity:'epic', category:'warrior', imagePath:null, power:89 },
+  { id:'dp01', name:'Dark Prophet',      subtitle:'Speaks only in truths none want.', rarity:'epic', category:'mystic',  imagePath:null, power:88 },
+  { id:'km01', name:'Khaos Monk',        subtitle:'Stillness before destruction.',    rarity:'epic', category:'mystic',  imagePath:null, power:88 },
+  { id:'nf01', name:'Nightmare Forge',   subtitle:'Crafts weapons from fear.',        rarity:'epic', category:'titan',   imagePath:null, power:88 },
 
-  // RARE (17) — rating 85-91
-  { id:'p26', name:'EUSÉBIO', fullName:'Eusébio', country:'Portugal', flag:'🇵🇹', position:'ST', rating:91, era:'1960s', rarity:'rare', category:'forward', initials:'EU', cardColor:'#4a1a1a' },
-  { id:'p27', name:'ROMÁRIO', fullName:'Romário', country:'Brasil', flag:'🇧🇷', position:'ST', rating:91, era:'1990s', rarity:'rare', category:'forward', initials:'RO', cardColor:'#3a5a1a' },
-  { id:'p28', name:'GEORGE BEST', fullName:'George Best', country:'Irlanda del Norte', flag:'🇬🇧', position:'RW', rating:90, era:'1960s', rarity:'rare', category:'forward', initials:'GB', cardColor:'#5a3a1a' },
-  { id:'p29', name:'IBRAHIMOVIĆ', fullName:'Zlatan Ibrahimović', country:'Suecia', flag:'🇸🇪', position:'ST', rating:90, era:'2010s', rarity:'rare', category:'forward', initials:'ZI', cardColor:'#3a1a5a' },
-  { id:'p30', name:'KANTÉ', fullName:"N'Golo Kanté", country:'Francia', flag:'🇫🇷', position:'CM', rating:90, era:'2010s', rarity:'rare', category:'midfielder', initials:'NK', cardColor:'#1a3a5a' },
-  { id:'p31', name:'KAKÁ', fullName:'Kaká', country:'Brasil', flag:'🇧🇷', position:'CAM', rating:90, era:'2000s', rarity:'rare', category:'midfielder', initials:'KK', cardColor:'#3a5a1a' },
-  { id:'p32', name:'DROGBA', fullName:'Didier Drogba', country:'Costa de Marfil', flag:'🇨🇮', position:'ST', rating:89, era:'2000s', rarity:'rare', category:'forward', initials:'DD', cardColor:'#5a3a1a' },
-  { id:'p33', name:'ROONEY', fullName:'Wayne Rooney', country:'Inglaterra', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', position:'CF', rating:88, era:'2000s', rarity:'rare', category:'forward', initials:'WR', cardColor:'#5a1a1a' },
-  { id:'p34', name:'RAÚL', fullName:'Raúl González', country:'España', flag:'🇪🇸', position:'CF', rating:88, era:'2000s', rarity:'rare', category:'forward', initials:'RG', cardColor:'#5a1a1a' },
-  { id:'p35', name:'RIVALDO', fullName:'Rivaldo', country:'Brasil', flag:'🇧🇷', position:'CAM', rating:88, era:'2000s', rarity:'rare', category:'midfielder', initials:'RV', cardColor:'#3a5a1a' },
-  { id:'p36', name:'BECKHAM', fullName:'David Beckham', country:'Inglaterra', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', position:'RM', rating:87, era:'2000s', rarity:'rare', category:'midfielder', initials:'DB', cardColor:'#5a1a1a' },
-  { id:'p37', name:'AGÜERO', fullName:'Sergio Agüero', country:'Argentina', flag:'🇦🇷', position:'ST', rating:87, era:'2010s', rarity:'rare', category:'forward', initials:'SA', cardColor:'#1a3a6e' },
-  { id:'p38', name:'HAZARD', fullName:'Eden Hazard', country:'Bélgica', flag:'🇧🇪', position:'LW', rating:87, era:'2010s', rarity:'rare', category:'forward', initials:'EH', cardColor:'#1a2a5a' },
-  { id:'p39', name:'VIEIRA', fullName:'Patrick Vieira', country:'Francia', flag:'🇫🇷', position:'CM', rating:86, era:'2000s', rarity:'rare', category:'midfielder', initials:'PV', cardColor:'#1a1a5a' },
-  { id:'p40', name:'DEL PIERO', fullName:'Alessandro Del Piero', country:'Italia', flag:'🇮🇹', position:'CF', rating:86, era:'2000s', rarity:'rare', category:'forward', initials:'DP', cardColor:'#1a1a5a' },
-  { id:'p41', name:'SHEVCHENKO', fullName:'Andriy Shevchenko', country:'Ucrania', flag:'🇺🇦', position:'ST', rating:86, era:'2000s', rarity:'rare', category:'forward', initials:'AS', cardColor:'#4a4a1a' },
-  { id:'p42', name:'HAALAND', fullName:'Erling Haaland', country:'Noruega', flag:'🇳🇴', position:'ST', rating:85, era:'2020s', rarity:'rare', category:'forward', initials:'EH', cardColor:'#1a4a6e' },
+  // RARE (18)
+  { id:'sr01', name:'Stone Reaper',      subtitle:'Patient as stone. Fatal as steel.',rarity:'rare', category:'warrior', imagePath:null, power:85 },
+  { id:'sm01', name:'Shadow Monk',       subtitle:'Discipline through solitude.',     rarity:'rare', category:'shadow',  imagePath:null, power:84 },
+  { id:'fw01', name:'Fire Wraith',       subtitle:'Burns without consuming itself.',  rarity:'rare', category:'mystic',  imagePath:null, power:84 },
+  { id:'wh01', name:'War Hawk',          subtitle:'Speed is his only strategy.',      rarity:'rare', category:'warrior', imagePath:null, power:83 },
+  { id:'dw01', name:'Dusk Wanderer',     subtitle:'Found on every edge of every map.',rarity:'rare', category:'shadow',  imagePath:null, power:83 },
+  { id:'nc01', name:'Night Crawler',     subtitle:'Never sleeps. Always watching.',   rarity:'rare', category:'beast',   imagePath:null, power:83 },
+  { id:'ig01', name:'Iron Ghost',        subtitle:'Armored soul. Empty shell.',       rarity:'rare', category:'shadow',  imagePath:null, power:82 },
+  { id:'sd01', name:'Storm Drake',       subtitle:'Ancient terror reborn.',           rarity:'rare', category:'beast',   imagePath:null, power:82 },
+  { id:'wm01', name:'War Machine',       subtitle:'Built to end conflicts.',          rarity:'rare', category:'titan',   imagePath:null, power:82 },
+  { id:'dp02', name:'Dark Pilgrim',      subtitle:'Walks toward what others flee.',   rarity:'rare', category:'shadow',  imagePath:null, power:81 },
+  { id:'ss01', name:'Storm Sentinel',    subtitle:'Guards the threshold.',            rarity:'rare', category:'warrior', imagePath:null, power:81 },
+  { id:'vb01', name:'Void Breaker',      subtitle:'Punches through dimensions.',      rarity:'rare', category:'titan',   imagePath:null, power:81 },
+  { id:'mb01', name:'Moon Beast',        subtitle:'Hunts only under the full moon.',  rarity:'rare', category:'beast',   imagePath:null, power:80 },
+  { id:'cw01', name:'Cold Warden',       subtitle:'Keeps order in frozen silence.',   rarity:'rare', category:'warrior', imagePath:null, power:80 },
+  { id:'fm01', name:'Flame Marshal',     subtitle:'Commands fire as a living army.',  rarity:'rare', category:'warrior', imagePath:null, power:80 },
+  { id:'sd02', name:'Sand Devil',        subtitle:'Storms across desolate plains.',   rarity:'rare', category:'beast',   imagePath:null, power:79 },
+  { id:'nk01', name:'Night King',        subtitle:'Rules what daylight abandons.',    rarity:'rare', category:'shadow',  imagePath:null, power:79 },
+  { id:'ew01', name:'Echo Warden',       subtitle:'Memory of ancient battles.',       rarity:'rare', category:'mystic',  imagePath:null, power:79 },
 
-  // COMMON (17) — rating 75-85
-  { id:'p44', name:'NEUER', fullName:'Manuel Neuer', country:'Alemania', flag:'🇩🇪', position:'GK', rating:85, era:'2010s', rarity:'common', category:'goalkeeper', initials:'MN', cardColor:'#1a1a3a' },
-  { id:'p45', name:'CASILLAS', fullName:'Iker Casillas', country:'España', flag:'🇪🇸', position:'GK', rating:84, era:'2010s', rarity:'common', category:'goalkeeper', initials:'IC', cardColor:'#5a1a1a' },
-  { id:'p46', name:'OWEN', fullName:'Michael Owen', country:'Inglaterra', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', position:'ST', rating:83, era:'2000s', rarity:'common', category:'forward', initials:'MO', cardColor:'#5a1a1a' },
-  { id:'p47', name:"ETO'O", fullName:"Samuel Eto'o", country:'Camerún', flag:'🇨🇲', position:'ST', rating:83, era:'2000s', rarity:'common', category:'forward', initials:'SE', cardColor:'#2a4a1a' },
-  { id:'p48', name:'TORRES', fullName:'Fernando Torres', country:'España', flag:'🇪🇸', position:'ST', rating:83, era:'2000s', rarity:'common', category:'forward', initials:'FT', cardColor:'#5a1a1a' },
-  { id:'p49', name:'GERRARD', fullName:'Steven Gerrard', country:'Inglaterra', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', position:'CM', rating:83, era:'2000s', rarity:'common', category:'midfielder', initials:'SG', cardColor:'#5a1a1a' },
-  { id:'p50', name:'LAMPARD', fullName:'Frank Lampard', country:'Inglaterra', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', position:'CM', rating:82, era:'2000s', rarity:'common', category:'midfielder', initials:'FL', cardColor:'#1a1a5a' },
-  { id:'p51', name:'XABI ALONSO', fullName:'Xabi Alonso', country:'España', flag:'🇪🇸', position:'CM', rating:82, era:'2000s', rarity:'common', category:'midfielder', initials:'XA', cardColor:'#5a1a1a' },
-  { id:'p52', name:'PUYOL', fullName:'Carles Puyol', country:'España', flag:'🇪🇸', position:'CB', rating:82, era:'2000s', rarity:'common', category:'defender', initials:'CP', cardColor:'#5a1a1a' },
-  { id:'p53', name:'SEEDORF', fullName:'Clarence Seedorf', country:'Países Bajos', flag:'🇳🇱', position:'CM', rating:82, era:'2000s', rarity:'common', category:'midfielder', initials:'CS', cardColor:'#5a1a1a' },
-  { id:'p54', name:'ADRIANO', fullName:'Adriano Leite', country:'Brasil', flag:'🇧🇷', position:'ST', rating:81, era:'2000s', rarity:'common', category:'forward', initials:'AD', cardColor:'#3a4a1a' },
-  { id:'p55', name:'TOTTI', fullName:'Francesco Totti', country:'Italia', flag:'🇮🇹', position:'CF', rating:81, era:'2000s', rarity:'common', category:'forward', initials:'FT', cardColor:'#5a1a1a' },
-  { id:'p56', name:'PIQUÉ', fullName:'Gerard Piqué', country:'España', flag:'🇪🇸', position:'CB', rating:80, era:'2010s', rarity:'common', category:'defender', initials:'GP', cardColor:'#5a1a1a' },
-  { id:'p57', name:'PIRLO', fullName:'Andrea Pirlo', country:'Italia', flag:'🇮🇹', position:'CM', rating:80, era:'2010s', rarity:'common', category:'midfielder', initials:'AP', cardColor:'#1a1a5a' },
-  { id:'p58', name:'CANNAVARO', fullName:'Fabio Cannavaro', country:'Italia', flag:'🇮🇹', position:'CB', rating:79, era:'2000s', rarity:'common', category:'defender', initials:'FC', cardColor:'#1a1a5a' },
-  { id:'p59', name:'VAN DIJK', fullName:'Virgil van Dijk', country:'Países Bajos', flag:'🇳🇱', position:'CB', rating:78, era:'2010s', rarity:'common', category:'defender', initials:'VD', cardColor:'#5a1a1a' },
-  { id:'p60', name:'SCHMEICHEL', fullName:'Peter Schmeichel', country:'Dinamarca', flag:'🇩🇰', position:'GK', rating:77, era:'1990s', rarity:'common', category:'goalkeeper', initials:'PS', cardColor:'#5a1a1a' },
+  // COMMON (17)
+  { id:'ir01', name:'Iron Runner',       subtitle:'Fast, relentless, unbreakable.',   rarity:'common', category:'warrior', imagePath:null, power:75 },
+  { id:'dg01', name:'Dark Guard',        subtitle:'First line. Last resort.',         rarity:'common', category:'warrior', imagePath:null, power:74 },
+  { id:'sw02', name:'Stone Wolf',        subtitle:'Feral instinct, solid core.',      rarity:'common', category:'beast',   imagePath:null, power:74 },
+  { id:'nm01', name:'Night Marshal',     subtitle:'Order in the darkest hour.',       rarity:'common', category:'shadow',  imagePath:null, power:73 },
+  { id:'fw02', name:'Frost Warden',      subtitle:'Cold protects. Cold endures.',     rarity:'common', category:'warrior', imagePath:null, power:73 },
+  { id:'dc01', name:'Dust Crawler',      subtitle:'Survives where others perish.',    rarity:'common', category:'beast',   imagePath:null, power:72 },
+  { id:'bg01', name:'Battle Ghost',      subtitle:'Fought in wars no one recorded.',  rarity:'common', category:'warrior', imagePath:null, power:72 },
+  { id:'sw03', name:'Swamp Wraith',      subtitle:'Rises when least expected.',       rarity:'common', category:'mystic',  imagePath:null, power:72 },
+  { id:'rf01', name:'Ruin Forger',       subtitle:'Builds from what others destroy.',  rarity:'common', category:'titan',   imagePath:null, power:71 },
+  { id:'sm02', name:'Storm Monk',        subtitle:'Trains through any condition.',    rarity:'common', category:'warrior', imagePath:null, power:71 },
+  { id:'dr01', name:'Dusk Rider',        subtitle:'Always moving. Never settling.',   rarity:'common', category:'shadow',  imagePath:null, power:71 },
+  { id:'wb01', name:'Wild Beast',        subtitle:'Untamed. Unpredictable. Free.',    rarity:'common', category:'beast',   imagePath:null, power:70 },
+  { id:'cr01', name:'Crypt Runner',      subtitle:'Faster in darkness than in light.',rarity:'common', category:'shadow',  imagePath:null, power:70 },
+  { id:'sf01', name:'Stone Fang',        subtitle:'Patience is its only weapon.',     rarity:'common', category:'beast',   imagePath:null, power:70 },
+  { id:'vm02', name:'Void Monk',         subtitle:'Emptied the self. Filled with power.',rarity:'common', category:'mystic', imagePath:null, power:69 },
+  { id:'bh01', name:'Black Hunter',      subtitle:'Tracks without tracks.',           rarity:'common', category:'shadow',  imagePath:null, power:69 },
+  { id:'dm01', name:'Dust Marshal',      subtitle:'Commands the forgotten.',          rarity:'common', category:'warrior', imagePath:null, power:68 },
 ];
 
 export const RARITY_CONFIG = {

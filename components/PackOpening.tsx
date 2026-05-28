@@ -1,8 +1,24 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ALL_STICKERS, RARITY_CONFIG, StickerDef } from '@/lib/stickers';
+import { ALL_STICKERS, RARITY_CONFIG, StickerDef, CollectibleCategory } from '@/lib/stickers';
 import type { PackType } from '@/lib/types';
+
+// Inline rarity styles (same as AlbumView, no shared export needed)
+const RARITY_STYLE = {
+  common:    { bg: 'linear-gradient(160deg, #0e0e14, #141420)', border: '#2a2a3a', glow: 'none',                             text: '#666',    badge: '#333',   badgeText: '#888' },
+  rare:      { bg: 'linear-gradient(160deg, #060e1a, #0a1828)', border: '#1a4a7a', glow: '0 0 12px rgba(56,189,248,0.3)',    text: '#38bdf8', badge: '#0a2a4a',badgeText: '#38bdf8' },
+  epic:      { bg: 'linear-gradient(160deg, #0e0618, #180828)', border: '#5a1a9a', glow: '0 0 18px rgba(168,85,247,0.4)',    text: '#a855f7', badge: '#2a0a4a',badgeText: '#a855f7' },
+  legendary: { bg: 'linear-gradient(160deg, #160800, #2a1000)', border: '#c07000', glow: '0 0 24px rgba(245,158,11,0.5)',    text: '#f59e0b', badge: '#3a1a00',badgeText: '#f59e0b' },
+};
+
+const CAT_ICON: Record<CollectibleCategory, string> = {
+  warrior: '⚔️',
+  beast:   '🐺',
+  mystic:  '🔮',
+  shadow:  '👤',
+  titan:   '🗿',
+};
 
 interface Props {
   pack: string[] | null;
@@ -12,149 +28,165 @@ interface Props {
   ownedStickers: { stickerId: string; count: number }[];
 }
 
-function FifaCardReveal({ sticker, index, isNew }: { sticker: StickerDef; index: number; isNew: boolean }) {
+function CardReveal({ sticker, index, isNew }: { sticker: StickerDef; index: number; isNew: boolean }) {
+  const rs = RARITY_STYLE[sticker.rarity];
   const cfg = RARITY_CONFIG[sticker.rarity];
   const isLegendary = sticker.rarity === 'legendary';
   const isEpic = sticker.rarity === 'epic';
 
-  const avatarBg = {
-    common: '#1e2a3a',
-    rare: '#0d1f35',
-    epic: '#2a0d4a',
-    legendary: '#3d2000',
-  }[sticker.rarity];
-
   return (
-    <motion.div
-      initial={{ rotateY: 90, scale: 0.6, opacity: 0 }}
-      animate={{ rotateY: 0, scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 260, damping: 20, delay: index * 0.05 }}
-      style={{
-        minWidth: '80px',
-        width: '80px',
-        aspectRatio: '2/3',
-        background: cfg.bg,
-        border: `1.5px solid ${cfg.border}`,
-        borderRadius: '12px',
-        padding: '8px 6px 6px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        boxShadow: cfg.glow,
-        position: 'relative',
-        flexShrink: 0,
-        overflow: 'hidden',
-      }}
-    >
-      {/* NEW / duplicate badge */}
-      {isNew ? (
-        <div style={{
-          position: 'absolute', top: '-5px', right: '-5px',
-          background: '#22c55e', borderRadius: '6px',
-          padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#000',
-          zIndex: 10,
-        }}>NEW</div>
-      ) : (
-        <div style={{
-          position: 'absolute', top: '-5px', right: '-5px',
-          background: '#444', borderRadius: '6px',
-          padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#ccc',
-          zIndex: 10,
-        }}>×DUP</div>
-      )}
-
-      {/* Legendary shimmer */}
+    <div style={{ position: 'relative', flexShrink: 0 }}>
+      {/* Legendary flash particles */}
       {isLegendary && (
-        <motion.div
-          animate={{ x: ['-120%', '120%'] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', repeatDelay: 0.5 }}
-          style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(105deg, transparent 30%, rgba(245,158,11,0.25) 50%, transparent 70%)',
-            pointerEvents: 'none', zIndex: 1,
-          }}
-        />
+        <>
+          {[...Array(6)].map((_, pi) => (
+            <motion.div
+              key={pi}
+              initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+              animate={{
+                opacity: [0, 1, 0],
+                scale: [0, 1, 0],
+                x: [0, (pi % 2 === 0 ? 1 : -1) * (20 + pi * 8)],
+                y: [0, -20 - pi * 6],
+              }}
+              transition={{ duration: 0.8, delay: index * 0.4 + 0.2 + pi * 0.05 }}
+              style={{
+                position: 'absolute',
+                top: '50%', left: '50%',
+                width: '6px', height: '6px',
+                borderRadius: '50%',
+                background: '#f59e0b',
+                pointerEvents: 'none',
+                zIndex: 20,
+              }}
+            />
+          ))}
+        </>
       )}
 
-      {/* Rating + flag */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '2px', zIndex: 2 }}>
-        <span style={{ fontSize: '11px', fontWeight: '900', color: cfg.color }}>{sticker.rating}</span>
-        <span style={{ fontSize: '10px' }}>{sticker.flag}</span>
-      </div>
-
-      {/* Position */}
-      <div style={{ fontSize: '7px', fontWeight: '800', color: cfg.color, opacity: 0.8, alignSelf: 'flex-start', marginBottom: '4px', zIndex: 2 }}>
-        {sticker.position}
-      </div>
-
-      {/* Avatar */}
-      <div style={{
-        width: '36px', height: '36px',
-        borderRadius: '50%',
-        background: avatarBg,
-        border: `1.5px solid ${cfg.border}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginBottom: '4px',
-        position: 'relative', zIndex: 2,
-        flexShrink: 0,
-      }}>
+      <motion.div
+        initial={{ rotateY: 90, opacity: 0, scale: 0.8 }}
+        animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: index * 0.4 }}
+        style={{
+          width: '80px', height: '120px',
+          borderRadius: '12px', overflow: 'hidden',
+          position: 'relative',
+          border: `1.5px solid ${rs.border}`,
+          boxShadow: rs.glow,
+          flexShrink: 0,
+        }}
+      >
+        {/* Legendary golden flash overlay */}
         {isLegendary && (
           <motion.div
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.6, 0] }}
+            transition={{ duration: 0.6, delay: index * 0.4 + 0.1 }}
             style={{
-              position: 'absolute', inset: 0, borderRadius: '50%',
-              boxShadow: '0 0 10px rgba(245,158,11,0.8)',
-              pointerEvents: 'none',
+              position: 'absolute', inset: 0,
+              background: 'radial-gradient(circle, rgba(245,158,11,0.8) 0%, transparent 70%)',
+              pointerEvents: 'none', zIndex: 10,
+              borderRadius: '12px',
             }}
           />
         )}
-        <span style={{ fontSize: '11px', fontWeight: '900', color: cfg.color }}>{sticker.initials}</span>
-      </div>
 
-      {/* Name */}
-      <div style={{
-        fontSize: '8px', fontWeight: '900', color: cfg.color,
-        textAlign: 'center', lineHeight: 1.1, zIndex: 2,
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%',
-      }}>
-        {sticker.name}
-      </div>
+        {/* NEW / DUP badge */}
+        {isNew ? (
+          <div style={{
+            position: 'absolute', top: '-5px', right: '-5px',
+            background: '#22c55e', borderRadius: '6px',
+            padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#000', zIndex: 15,
+          }}>NEW</div>
+        ) : (
+          <div style={{
+            position: 'absolute', top: '-5px', right: '-5px',
+            background: '#444', borderRadius: '6px',
+            padding: '1px 5px', fontSize: '7px', fontWeight: '900', color: '#ccc', zIndex: 15,
+          }}>×DUP</div>
+        )}
 
-      {/* Country */}
-      <div style={{
-        fontSize: '6px', color: '#777', textAlign: 'center',
-        marginTop: '2px', zIndex: 2,
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%',
-      }}>
-        {sticker.country}
-      </div>
+        {sticker.imagePath ? (
+          /* Image card */
+          <>
+            <img
+              src={sticker.imagePath}
+              alt={sticker.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+              padding: '12px 6px 5px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+            }}>
+              <div style={{ fontSize: '8px', fontWeight: '900', color: rs.text, textAlign: 'center' }}>{sticker.name}</div>
+              <div style={{ fontSize: '6px', fontWeight: '800', color: rs.badgeText, letterSpacing: '0.08em', marginTop: '2px' }}>
+                {cfg.label.toUpperCase()}
+              </div>
+            </div>
+            {/* Legendary shimmer */}
+            {isLegendary && (
+              <motion.div
+                animate={{ x: ['-150%', '150%'] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', repeatDelay: 0.5 }}
+                style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(105deg, transparent 30%, rgba(245,158,11,0.25) 50%, transparent 70%)',
+                  pointerEvents: 'none', zIndex: 5,
+                }}
+              />
+            )}
+          </>
+        ) : (
+          /* Placeholder card */
+          <div style={{
+            width: '100%', height: '100%',
+            background: rs.bg,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'space-between',
+            padding: '6px 5px',
+          }}>
+            <div style={{ fontSize: '7px', fontWeight: '800', color: rs.badgeText, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {cfg.label}
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '22px', marginBottom: '4px' }}>{CAT_ICON[sticker.category]}</div>
+              <div style={{ fontSize: '8px', fontWeight: '900', color: rs.text, lineHeight: '1.2', textAlign: 'center' }}>
+                {sticker.name}
+              </div>
+            </div>
+            <div style={{ fontSize: '10px', fontWeight: '900', color: rs.text }}>{sticker.power}</div>
 
-      {/* Rarity */}
-      <div style={{
-        marginTop: '3px',
-        background: cfg.color + '22',
-        border: `1px solid ${cfg.color}44`,
-        borderRadius: '4px', padding: '1px 5px',
-        fontSize: '6px', fontWeight: '800', color: cfg.color,
-        zIndex: 2,
-      }}>
-        {cfg.label.toUpperCase()}
-      </div>
+            {/* Epic/legendary glow pulse */}
+            {(isLegendary || isEpic) && (
+              <motion.div
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 1.8, repeat: Infinity }}
+                style={{
+                  position: 'absolute', inset: 0, borderRadius: '11px',
+                  boxShadow: rs.glow, pointerEvents: 'none',
+                }}
+              />
+            )}
 
-      {/* Epic/legendary glow */}
-      {(isLegendary || isEpic) && (
-        <motion.div
-          animate={{ opacity: [0.3, 0.7, 0.3] }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-          style={{
-            position: 'absolute', inset: 0, borderRadius: '12px',
-            boxShadow: cfg.glow,
-            pointerEvents: 'none',
-          }}
-        />
-      )}
-    </motion.div>
+            {/* Legendary shimmer */}
+            {isLegendary && (
+              <motion.div
+                animate={{ x: ['-150%', '150%'] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', repeatDelay: 0.5 }}
+                style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(105deg, transparent 30%, rgba(245,158,11,0.2) 50%, transparent 70%)',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+          </div>
+        )}
+      </motion.div>
+    </div>
   );
 }
 
@@ -190,9 +222,9 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
   const hasLegendary = stickers.some(s => s.rarity === 'legendary');
 
   const packVisuals = {
-    free:         { bg: 'linear-gradient(160deg, #1a0e00, #2a1800)', border: '#8a5a00', glow: 'rgba(245,158,11,0.25)', color: '#f59e0b', label: 'SILVER', labelColor: '#f59e0b' },
-    intermediate: { bg: 'linear-gradient(160deg, #001a2a, #00253a)', border: '#0e5a8a', glow: 'rgba(56,189,248,0.25)', color: '#38bdf8', label: 'SILVER', labelColor: '#38bdf8' },
-    premium:      { bg: 'linear-gradient(160deg, #100822, #180c30)', border: '#7a5a00', glow: 'rgba(245,158,11,0.4)',  color: '#f59e0b', label: 'GOLD',   labelColor: '#f59e0b' },
+    free:         { bg: 'linear-gradient(160deg, #1a0e00, #2a1800)', border: '#8a5a00', glow: 'rgba(245,158,11,0.25)', color: '#f59e0b' },
+    intermediate: { bg: 'linear-gradient(160deg, #001a2a, #00253a)', border: '#0e5a8a', glow: 'rgba(56,189,248,0.25)',  color: '#38bdf8' },
+    premium:      { bg: 'linear-gradient(160deg, #100822, #180c30)', border: '#7a5a00', glow: 'rgba(245,158,11,0.4)',   color: '#f59e0b' },
   };
   const v = packVisuals[packType];
 
@@ -204,9 +236,7 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
         exit={{ opacity: 0 }}
         style={{
           position: 'fixed', inset: 0,
-          background: hasLegendary && done
-            ? 'rgba(0,0,0,0.92)'
-            : 'rgba(0,0,0,0.88)',
+          background: hasLegendary && done ? 'rgba(0,0,0,0.92)' : 'rgba(0,0,0,0.88)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 500,
           paddingTop: 'env(safe-area-inset-top, 20px)',
@@ -230,20 +260,18 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
           }}
         >
           <div style={{ fontSize: '11px', color: '#444', fontWeight: '700', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>
-            SOBRE DE JUGADORES
+            SOBRE DE COLECCIONABLES
           </div>
           <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff', marginBottom: '20px' }}>
-            {!opened ? '¡Nuevo sobre!' : done ? 'Jugadores obtenidos' : 'Revelando...'}
+            {!opened ? '¡Nuevo sobre!' : done ? 'Coleccionables obtenidos' : 'Revelando...'}
           </div>
 
           {!opened ? (
-            /* Closed pack — real image */
             <motion.div
               animate={{ y: [0, -8, 0], filter: [`drop-shadow(0 0 8px ${v.glow})`, `drop-shadow(0 0 20px ${v.glow})`, `drop-shadow(0 0 8px ${v.glow})`] }}
               transition={{ duration: 2, repeat: Infinity }}
               style={{ marginBottom: '24px', display: 'flex', justifyContent: 'center', position: 'relative' }}
             >
-              {/* Shine sweep on image */}
               <div style={{ position: 'relative', width: '180px' }}>
                 <img
                   src={packType === 'premium' ? '/packs/gold.png' : '/packs/silver.png'}
@@ -261,7 +289,6 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
               </div>
             </motion.div>
           ) : (
-            /* Revealed stickers */
             <div style={{
               display: 'flex', gap: '8px', marginBottom: '20px',
               overflowX: 'auto', paddingBottom: '6px',
@@ -271,7 +298,7 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
                 const owned = ownedStickers.find(o => o.stickerId === sticker.id);
                 const isNew = !owned;
                 return (
-                  <FifaCardReveal
+                  <CardReveal
                     key={sticker.id + i}
                     sticker={sticker}
                     index={i}
@@ -288,16 +315,17 @@ export default function PackOpening({ pack, packType = 'free', onClaim, onClose,
               onClick={handleOpen}
               style={{
                 width: '100%',
-                background: 'linear-gradient(135deg, #92400e, #b45309)',
-                border: 'none', borderRadius: '14px',
+                background: 'linear-gradient(135deg, #1a0a2e, #2d1b69)',
+                border: '1px solid #5a1a9a',
+                borderRadius: '14px',
                 padding: '0', cursor: 'pointer',
-                fontSize: '15px', fontWeight: '800', color: '#fff',
-                boxShadow: '0 4px 20px rgba(245,158,11,0.3)',
+                fontSize: '15px', fontWeight: '800', color: '#c084fc',
+                boxShadow: '0 4px 20px rgba(168,85,247,0.3)',
                 minHeight: '52px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >
-              ⚽ Abrir sobre ✦
+              🔮 Abrir sobre ✦
             </motion.button>
           )}
 
